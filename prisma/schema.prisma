@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum AssessmentType {
+  ASSIGNMENT
+  LAB
+  QUIZ
+  MIDTERM
+  FINAL_EXAM
+  PROJECT
+  OTHER
+}
+
+enum AssessmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+model Semester {
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  isActive  Boolean  @default(false)
+  courses   Course[]
+}
+
+model Course {
+  id          String          @id @default(cuid())
+  code        String
+  name        String
+  semesterId  String
+  instructor  String?
+  color       String          @default("#5b67e8")
+  notes       String          @default("")
+  archived    Boolean         @default(false)
+  semester    Semester        @relation(fields: [semesterId], references: [id], onDelete: Restrict)
+  assessments Assessment[]
+  tasks       Task[]
+  events      CalendarEvent[]
+  schedules   ScheduleEntry[]
+
+  @@unique([semesterId, code])
+  @@index([semesterId, archived])
+}
+
+model Assessment {
+  id       String           @id @default(cuid())
+  courseId String
+  name     String
+  type     AssessmentType   @default(ASSIGNMENT)
+  dueDate  DateTime?
+  weight   Float            @default(0)
+  score    Float?
+  maxScore Float            @default(100)
+  status   AssessmentStatus @default(NOT_STARTED)
+  notes    String           @default("")
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tasks    Task[]
+
+  @@index([courseId, dueDate])
+}
+
+model Task {
+  id               String       @id @default(cuid())
+  title            String
+  description      String       @default("")
+  dueDate          DateTime?
+  priority         Priority     @default(MEDIUM)
+  estimatedMinutes Int?
+  status           TaskStatus   @default(NOT_STARTED)
+  courseId         String?
+  assessmentId     String?
+  createdAt        DateTime     @default(now())
+  completedAt      DateTime?
+  course           Course?      @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  assessment       Assessment?  @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+  subtasks         Subtask[]
+
+  @@index([status, dueDate])
+  @@index([courseId])
+  @@index([assessmentId])
+}
+
+model Subtask {
+  id        String  @id @default(cuid())
+  taskId    String
+  title     String
+  completed Boolean @default(false)
+  position  Int     @default(0)
+  task      Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, position])
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  startAt     DateTime
+  endAt       DateTime
+  allDay      Boolean  @default(false)
+  location    String   @default("")
+  courseId    String?
+  color       String   @default("#5b67e8")
+  course      Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([startAt, endAt])
+  @@index([courseId])
+}
+
+model ScheduleEntry {
+  id        String @id @default(cuid())
+  courseId  String
+  title     String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  location  String @default("")
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, dayOfWeek])
+}
+
+model Settings {
+  id            String  @id @default("preferences")
+  displayName   String  @default("")
+  theme         Theme   @default(SYSTEM)
+  timeFormat    String  @default("12")
+  weekStartsOn  Int     @default(1)
+  showCompleted Boolean @default(false)
+}

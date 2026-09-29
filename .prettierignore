@@ -1,0 +1,8 @@
+node_modules
+.next
+.postgres
+src/generated
+package-lock.json
+test-results
+playwright-report
+artifacts

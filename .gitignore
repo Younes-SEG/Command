@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env
+.env.local
+.postgres/
+src/generated/
+*.tsbuildinfo
+*.log
+test-results/
+playwright-report/
+artifacts/
