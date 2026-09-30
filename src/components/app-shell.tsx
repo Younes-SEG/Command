@@ -15,6 +15,7 @@ import {
   Search,
   Settings2,
   Sun,
+  Terminal,
 } from 'lucide-react';
 import { useWorkspace } from './workspace-provider';
 import { Button } from './ui/button';
@@ -56,10 +57,9 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
     <div className="sidebar-inner">
       <Link className="brand" href="/" onClick={onNavigate}>
         <span className="brand-symbol" aria-hidden>
-          <i />
-          <i />
+          <Terminal size={19} strokeWidth={2.2} />
         </span>
-        folio<span className="text-primary">.</span>
+        Command
       </Link>
       <div className="workspace-label">A little more clarity.</div>
       <Button variant="outline" className="sidebar-add" onClick={onQuickAdd}>

@@ -1,4 +1,4 @@
-# Folio
+# Command
 
 A single-user university command center built with Next.js, TypeScript, Tailwind CSS, shadcn/ui components, Prisma, and PostgreSQL.
 
@@ -22,7 +22,7 @@ Open **http://127.0.0.1:3000**. Setup creates `.env` if needed, generates Prisma
 
 For an empty workspace, use `npm run setup:empty` on a new database. Remove the seeded fixtures later with `npm run db:clear-demo`. Demo removal preserves courses that have user-created linked entries; you can then remove retained courses using the app. Rerunning the seed restores missing fixture IDs and never overwrites existing records.
 
-The bundled database uses port **54329** and a local development password. If you prefer Docker, run `docker compose up -d` in place of `db:local`. For an existing PostgreSQL server, set `DATABASE_URL` in `.env` and skip `db:local`. Do not run the bundled and Docker database on the same port simultaneously.
+The bundled database uses port **54329** and a local development password. If you prefer Docker, run `docker compose up -d` in place of `db:local` and wait for its database healthcheck to pass before running setup. For an existing PostgreSQL server, set `DATABASE_URL` in `.env` and skip `db:local`. Do not run the bundled and Docker database on the same port simultaneously.
 
 If your package manager blocks install scripts, approve the installed Prisma engine and embedded-postgres platform packages before setup. On npm 12, use `npm install-scripts ls` to inspect the project approvals. The lockfile and approved build packages are included.
 
@@ -62,4 +62,4 @@ Database and browser checks require PostgreSQL to be running and setup to have c
 
 For production locally, run `npm run build`, then `npm start`. Keep PostgreSQL running. Back up your database before changing database infrastructure; `.postgres/` is your persistent data, not a disposable build folder.
 
-The best next addition is a simple backup/export and restore workflow, so using Folio daily comes with an easy way to keep an extra copy of your semester.
+The best next addition is a simple backup/export and restore workflow, so using Command daily comes with an easy way to keep an extra copy of your semester.
