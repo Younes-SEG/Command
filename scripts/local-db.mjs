@@ -1,25 +1,41 @@
 import EmbeddedPostgres from 'embedded-postgres';
-import { existsSync, copyFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Client } from 'pg';
+import { ensureLocalEnv } from './local-env.mjs';
 
-if (!existsSync('.env')) copyFileSync('.env.example', '.env');
+const configuration = ensureLocalEnv();
+const databaseUrl = new URL(process.env.DATABASE_URL || configuration.DATABASE_URL);
+if (
+  databaseUrl.hostname !== '127.0.0.1' ||
+  databaseUrl.port !== '54329' ||
+  databaseUrl.pathname !== '/folio' ||
+  !databaseUrl.password
+)
+  throw new Error(
+    'db:local requires a password-protected database at 127.0.0.1:54329/folio. For a custom database, start it separately and run setup.',
+  );
+const probeUrl = new URL(databaseUrl);
+probeUrl.pathname = '/postgres';
 const databaseDir = resolve('.postgres');
 const pg = new EmbeddedPostgres({
   databaseDir,
-  user: 'folio',
-  password: 'folio_local',
+  user: decodeURIComponent(databaseUrl.username),
+  password: decodeURIComponent(databaseUrl.password),
   port: 54329,
   persistent: true,
   authMethod: 'scram-sha-256',
   postgresFlags: ['-h', '127.0.0.1'],
   onLog: () => {},
   onError: (message) => {
-    if (/FATAL|ERROR/.test(String(message))) console.error(String(message));
+    if (/FATAL|ERROR/.test(String(message)))
+      console.error(
+        'Local PostgreSQL reported an error. Details omitted to protect workspace data.',
+      );
   },
 });
 const probe = new Client({
-  connectionString: 'postgresql://folio:folio_local@127.0.0.1:54329/postgres',
+  connectionString: probeUrl.toString(),
   connectionTimeoutMillis: 1500,
 });
 let running = false;
@@ -60,8 +76,10 @@ try {
   }
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
-} catch (error) {
-  console.error('Could not start local PostgreSQL:', error.message);
+} catch {
+  console.error(
+    'Could not start local PostgreSQL. Check the local configuration and database permissions.',
+  );
   console.error('Check that port 54329 is free and package install scripts have been allowed.');
   process.exitCode = 1;
 }

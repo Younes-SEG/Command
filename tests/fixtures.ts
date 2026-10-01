@@ -68,6 +68,8 @@ export function workspace(overrides: Partial<Workspace> = {}): Workspace {
       timeFormat: '24',
       weekStartsOn: 1,
       showCompleted: false,
+      studyBuddy: 'CAT',
+      buddyMotion: true,
     },
     ...overrides,
   };

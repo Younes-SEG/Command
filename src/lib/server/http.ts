@@ -59,7 +59,8 @@ export function apiError(error: unknown) {
         { status: 409 },
       );
   }
-  console.error('Workspace request failed:', error);
+  // Error objects may contain SQL parameters, notes, grades, or private feed URLs.
+  console.error('Workspace request failed. Details omitted to protect personal data.');
   return NextResponse.json(
     { error: 'The database is unavailable or the change could not be saved. Please try again.' },
     { status: 500 },

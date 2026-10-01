@@ -22,13 +22,15 @@ Open **http://127.0.0.1:3000**. Setup creates `.env` if needed, generates Prisma
 
 For an empty workspace, use `npm run setup:empty` on a new database. Remove the seeded fixtures later with `npm run db:clear-demo`. Demo removal preserves courses that have user-created linked entries; you can then remove retained courses using the app. Rerunning the seed restores missing fixture IDs and never overwrites existing records.
 
-The bundled database uses port **54329** and a local development password. If you prefer Docker, run `docker compose up -d` in place of `db:local` and wait for its database healthcheck to pass before running setup. For an existing PostgreSQL server, set `DATABASE_URL` in `.env` and skip `db:local`. Do not run the bundled and Docker database on the same port simultaneously.
+The bundled database uses port **54329**. New installations automatically generate a random database password in `.env`; existing installations keep their credentials. Protect this file and exclude it from releases. `.env.example` and Docker use development-only example credentials. If you prefer Docker, configure its connection in `.env`, run `docker compose up -d` in place of `db:local`, and wait for its healthcheck before setup. For an existing PostgreSQL server, set `DATABASE_URL` in `.env` and skip `db:local`. Do not run the bundled and Docker database on the same port simultaneously.
 
 If your package manager blocks install scripts, approve the installed Prisma engine and embedded-postgres platform packages before setup. On npm 12, use `npm install-scripts ls` to inspect the project approvals. The lockfile and approved build packages are included.
 
 ## Using your workspace
 
 - Set your name, theme, time format, and active semester in Settings.
+- Pick Mochi, Sprout, or Nimbus under **Settings → Appearance → Your study buddy** and save preferences. The buddy quietly wanders along the screen edges, follows the mouse, and hops along on navigation. Turn off **Gentle movement** for a still companion, or choose **Off**. Reduced motion is respected; the buddy never intercepts clicks or plays sounds.
+- In **Settings → Connect your calendar**, paste a Brightspace subscription URL, preview the current term, then choose **Connect and import**. Adjust import dates before connecting if needed.
 - Create courses, add their weekly sessions, then add assessments and weights.
 - Enter assessment scores to update the gradebook and target-grade calculator.
 - Add tasks, optionally attach a course/assessment, and break work into subtasks.
@@ -36,6 +38,26 @@ If your package manager blocks install scripts, approve the installed Prisma eng
 - Press **Ctrl+K** on Windows or **Cmd+K** on macOS for navigation and quick add.
 
 Dates and recurring classes use your device's local time zone. An all-day event's “Last day” is inclusive in the editor; its database end is exclusive. Recurring classes stop at the semester boundary. Archived courses and their linked entries are hidden from the default calendar; their tasks remain accessible in Tasks.
+
+## Calendar subscriptions
+
+Calendar subscriptions create missing courses from Brightspace's course labels, reuse matching course codes in an overlapping semester, and import recognized deadlines as assessments. Other entries appear as calendar events. Grades and weights are not supplied by calendar feeds; imported assessments start with no score and 0% weight.
+
+The local Node server checks connected feeds every 15 minutes and on startup when due, including while the browser is closed. The open app refreshes its display every minute and on focus. **Sync now** requests an immediate check (limited to once per minute). Stop the server and syncing stops; the next startup catches up. This timer requires a persistent Node process; serverless deployment needs a separate scheduled job.
+
+Each subscription retains its selected date range. Reconnect with new dates for a new term. Stable event IDs prevent duplicates across refreshes and reconnection to the same URL. Sync updates source titles/dates/locations while preserving locally entered grades, weights, progress and notes. Manually deleted imported items stay deleted. Explicit cancellations are labelled; cancelled assessments lose their due date but retain grades. Missing feed entries are kept because a provider can shorten its feed without cancelling work.
+
+Disconnecting stops updates and keeps imported entries plus the private connection record for later reconnection. Subscription URLs are stored in PostgreSQL, excluded from API responses and never written to source files. HTTPS requests reject internal/private addresses and revalidate redirects. Import supports bounded recurrence, exceptions, all-day dates and time zones; oversized or unsupported feeds fail without partially importing records.
+
+Disconnected connections remain visible. **Forget link** deletes the private connection and import mapping while keeping academic entries; importing the same feed after forgetting it can create duplicates. Preview and Connect explain provider access and storage before acting.
+
+## Privacy and public release
+
+**Settings → Your data** downloads a readable JSON copy without private feed URLs, or erases the active workspace after typed confirmation. Erasure does not remove independent backups, exported files or provider calendars. The export has no automatic restore tool yet.
+
+Footer links open Privacy, Terms, Cookies, Accessibility, Credits and About. This edition has no accounts, fees, marketing emails, tracking cookies or analytics. Policy pages do not load private workspace data. Non-local workspace requests are rejected; this is still a personal local app, not a hosted multi-user service.
+
+See [the public-release review](docs/public-release-review.md) for implemented protections, deliberately omitted features, dependency/licence findings and remaining distribution work. Ontario is configured; operator identity and contact details are intentionally pending. New public services require a fresh review. `npm run licenses` regenerates notices and the unmodified ical.js source included for redistribution.
 
 ## Architecture and decisions
 
@@ -54,6 +76,8 @@ npm test
 npm run lint
 npm run typecheck
 npm run test:db
+npm run test:calendar-db
+npm run test:privacy-db
 npm run test:e2e
 npm run build
 ```
@@ -62,4 +86,4 @@ Database and browser checks require PostgreSQL to be running and setup to have c
 
 For production locally, run `npm run build`, then `npm start`. Keep PostgreSQL running. Back up your database before changing database infrastructure; `.postgres/` is your persistent data, not a disposable build folder.
 
-The best next addition is a simple backup/export and restore workflow, so using Command daily comes with an easy way to keep an extra copy of your semester.
+The privacy database check uses a separate disposable database and verifies its identity before testing erasure. Do not test the valid erase endpoint against your personal workspace. A full backup/restore workflow and packaged installer remain future work.

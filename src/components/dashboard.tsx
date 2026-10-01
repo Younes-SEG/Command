@@ -241,7 +241,7 @@ export function Dashboard() {
                 onClick={() => setFocusView('today')}
               >
                 Today & overdue{' '}
-                <span className="ml-1 opacity-60">
+                <span className="ml-1 text-[var(--muted-foreground)]">
                   {
                     pending.filter(
                       (t) => isSameDay(t.dueDate, now) || isOverdue(t.dueDate, t.status, now),
@@ -296,9 +296,7 @@ export function Dashboard() {
                   <div className="schedule-time">
                     {item.allDay ? 'All day' : formatTime(item.start, data.settings.timeFormat)}
                     {!item.allDay && (
-                      <div className="mt-1 opacity-50">
-                        {formatTime(item.end, data.settings.timeFormat)}
-                      </div>
+                      <div className="mt-1">{formatTime(item.end, data.settings.timeFormat)}</div>
                     )}
                   </div>
                   <button

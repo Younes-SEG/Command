@@ -122,7 +122,7 @@ export function TaskFields({
                 aria-label={`Subtask ${index + 1}`}
                 placeholder="A smaller step"
                 maxLength={200}
-                className={subtask.completed ? 'line-through opacity-60' : ''}
+                className={subtask.completed ? 'line-through text-[var(--muted-foreground)]' : ''}
               />
               <Button
                 type="button"

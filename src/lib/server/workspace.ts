@@ -45,6 +45,7 @@ export async function getWorkspace(): Promise<Workspace> {
       ...settings,
       timeFormat: settings.timeFormat as '12' | '24',
       weekStartsOn: settings.weekStartsOn as 0 | 1,
+      studyBuddy: settings.studyBuddy as Workspace['settings']['studyBuddy'],
     },
   };
 }

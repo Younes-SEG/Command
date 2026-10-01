@@ -19,6 +19,9 @@ import { Label } from '@/components/ui/label';
 import { useWorkspace } from '@/components/workspace-provider';
 import { formatDate } from '@/lib/dates';
 import type { Settings } from '@/lib/types';
+import { CalendarSubscriptions } from './calendar-subscriptions';
+import { PrivacyControls } from './privacy-controls';
+import { BuddyCharacter, buddyCharacters } from './buddy-character';
 
 export function SettingsView() {
   const { data, save, openEditor } = useWorkspace();
@@ -44,6 +47,8 @@ export function SettingsView() {
           timeFormat: form.get('timeFormat'),
           weekStartsOn: Number(form.get('weekStartsOn')),
           showCompleted: form.get('showCompleted') === 'on',
+          studyBuddy: form.get('studyBuddy'),
+          buddyMotion: form.get('buddyMotion') === 'on',
         },
         'preferences',
       );
@@ -68,6 +73,8 @@ export function SettingsView() {
           <p className="muted mt-2 text-sm">A few thoughtful details to make this space yours.</p>
         </div>
       </header>
+      <CalendarSubscriptions />
+      <PrivacyControls />
       <form
         onSubmit={savePreferences}
         onChange={() => setSaved(false)}
@@ -198,7 +205,9 @@ function PreferenceFields({ settings }: { settings: Settings }) {
       <div className="grid gap-4 py-6 sm:grid-cols-[1fr_1.4fr]">
         <div>
           <Label htmlFor="settings-name">What should we call you?</Label>
-          <p className="muted mt-2 text-xs leading-relaxed">A name for your dashboard greeting.</p>
+          <p className="muted mt-2 text-xs leading-relaxed">
+            Optional. A nickname or no name is fine.
+          </p>
         </div>
         <Input
           id="settings-name"
@@ -210,7 +219,9 @@ function PreferenceFields({ settings }: { settings: Settings }) {
         />
       </div>
       <fieldset className="min-w-0 py-6">
-        <legend className="float-left w-full text-sm font-medium">Appearance</legend>
+        <legend id="appearance" className="float-left w-full scroll-mt-6 text-sm font-medium">
+          Appearance
+        </legend>
         <div className="clear-both pt-2">
           <p className="muted mb-4 text-xs">Choose your favorite look, or follow your device.</p>
           <div className="grid grid-cols-3 gap-3">
@@ -240,6 +251,50 @@ function PreferenceFields({ settings }: { settings: Settings }) {
             ))}
           </div>
         </div>
+        <fieldset className="mt-6 min-w-0 border-t border-[var(--border)] pt-5">
+          <legend className="float-left w-full text-sm font-medium">Your study buddy</legend>
+          <div className="clear-both pt-2">
+            <p className="muted mb-4 text-xs leading-relaxed">
+              A little company at the edge of your screen. No sounds, messages, or things to take
+              care of.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {buddyCharacters.map((option) => (
+                <label key={option.value} className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="studyBuddy"
+                    value={option.value}
+                    defaultChecked={settings.studyBuddy === option.value}
+                    className="peer sr-only"
+                  />
+                  <div className="rounded-xl border-2 border-[var(--border)] p-3 text-center transition-colors peer-checked:border-[var(--primary)] peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)] peer-focus-visible:ring-offset-2">
+                    <div className="mx-auto mb-2 size-16">
+                      <BuddyCharacter character={option.value} />
+                    </div>
+                    <span className="block text-sm font-medium">{option.name}</span>
+                    <span className="muted mt-1 block text-[11px]">{option.description}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <label className="mt-4 flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                name="buddyMotion"
+                defaultChecked={settings.buddyMotion}
+                className="mt-0.5 shrink-0"
+              />
+              <span>
+                <span className="text-sm font-medium">Gentle movement</span>
+                <span className="muted mt-1 block text-xs leading-relaxed">
+                  Wander, follow your mouse along the edges, and hop along on page changes. Turn off
+                  for a still companion. Your device’s reduced-motion setting is always respected.
+                </span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
       </fieldset>
       <div className="grid gap-4 py-6 sm:grid-cols-[1fr_1.4fr]">
         <div>

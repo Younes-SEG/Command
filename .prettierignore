@@ -1,8 +1,10 @@
-node_modules
-.next
-.postgres
-src/generated
+node_modules/
 package-lock.json
-test-results
-playwright-report
-artifacts
+.next/
+.postgres/
+src/generated/
+public/licenses/
+public/third-party-notices.txt
+test-results/
+playwright-report/
+artifacts/

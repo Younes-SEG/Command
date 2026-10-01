@@ -1,6 +1,6 @@
-import { existsSync, copyFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-if (!existsSync('.env')) copyFileSync('.env.example', '.env');
+import { ensureLocalEnv } from './local-env.mjs';
+ensureLocalEnv();
 function run(script, args) {
   const result = spawnSync(process.execPath, [script, ...args], {
     stdio: 'inherit',

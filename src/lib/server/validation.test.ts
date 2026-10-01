@@ -58,6 +58,10 @@ describe('date and schedule boundaries', () => {
       allDay: true,
     };
     expect(eventSchema.safeParse(event).success).toBe(false);
+    expect(eventSchema.safeParse({ ...event, allDay: false }).success).toBe(true);
+    expect(
+      eventSchema.safeParse({ ...event, allDay: false, endAt: '2026-09-30T04:00:00Z' }).success,
+    ).toBe(false);
     expect(eventSchema.safeParse({ ...event, endAt: '2026-10-02T04:00:00Z' }).success).toBe(true);
   });
   it('rejects invalid weekdays and overnight class blocks', () => {

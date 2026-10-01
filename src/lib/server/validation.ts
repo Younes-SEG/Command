@@ -111,8 +111,8 @@ export const eventSchema = z
     courseId: link.nullable().default(null),
     color,
   })
-  .refine((value) => value.endAt > value.startAt, {
-    message: 'The event must end after it starts.',
+  .refine((value) => (value.allDay ? value.endAt > value.startAt : value.endAt >= value.startAt), {
+    message: 'The event cannot end before it starts.',
     path: ['endAt'],
   });
 
@@ -136,4 +136,6 @@ export const settingsSchema = z.object({
   timeFormat: z.enum(['12', '24']).default('12'),
   weekStartsOn: z.union([z.literal(0), z.literal(1)]).default(1),
   showCompleted: z.boolean().default(false),
+  studyBuddy: z.enum(['CAT', 'SPROUT', 'CLOUD', 'NONE']).default('CAT'),
+  buddyMotion: z.boolean().default(true),
 });

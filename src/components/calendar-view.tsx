@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   BookOpen,
   CalendarDays,
@@ -156,10 +157,15 @@ export function CalendarView() {
           <h1 className="text-3xl font-semibold tracking-tight">Your calendar</h1>
           <p className="muted mt-2 text-sm">Classes, deadlines, and a little life in between.</p>
         </div>
-        <Button onClick={() => addEvent(selectedDay)}>
-          <Plus size={16} />
-          Add event
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/settings#calendar-connections">Connect calendar</Link>
+          </Button>
+          <Button onClick={() => addEvent(selectedDay)}>
+            <Plus size={16} />
+            Add event
+          </Button>
+        </div>
       </div>
 
       <section className="card overflow-hidden" aria-label="Calendar">
@@ -404,7 +410,7 @@ function MonthGrid({
                   aria-current={today ? 'date' : undefined}
                   aria-pressed={selected}
                   aria-label={`Show agenda for ${formatDate(day, { weekday: 'long', month: 'long', day: 'numeric' })}`}
-                  className={`flex size-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${today ? 'bg-[var(--primary)] text-white' : selected ? 'bg-[var(--muted)] text-[var(--primary)] ring-1 ring-[var(--primary)]/25' : currentMonth ? 'hover:bg-[var(--muted)]' : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]'}`}
+                  className={`flex size-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${today ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' : selected ? 'bg-[var(--muted)] text-[var(--primary)] ring-1 ring-[var(--primary)]/25' : currentMonth ? 'hover:bg-[var(--muted)]' : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]'}`}
                 >
                   {day.getDate()}
                 </button>
@@ -462,7 +468,7 @@ function MonthItem({
       type="button"
       onClick={onOpen}
       title={`${kindLabels[item.kind]}: ${item.title} · ${time}`}
-      className={`flex w-full min-w-0 items-center gap-1.5 rounded-md border-l-2 px-1.5 py-1.5 text-left text-[10px] transition-opacity hover:opacity-75 ${item.completed ? 'opacity-50' : ''}`}
+      className={`flex w-full min-w-0 items-center gap-1.5 rounded-md border-l-2 px-1.5 py-1.5 text-left text-[10px] hover:ring-1 hover:ring-[var(--control-border)] ${item.completed ? 'text-[var(--muted-foreground)]' : ''}`}
       style={{ borderLeftColor: item.color, backgroundColor: `${item.color}12` }}
     >
       <Icon size={10} className="shrink-0" style={{ color: item.color }} />
@@ -506,7 +512,7 @@ function WeekGrid({
                   {formatDate(day, { weekday: 'short' })}
                 </p>
                 <p
-                  className={`mt-1 flex size-8 items-center justify-center rounded-full text-xl font-semibold ${today ? 'bg-[var(--primary)] text-white' : ''}`}
+                  className={`mt-1 flex size-8 items-center justify-center rounded-full text-xl font-semibold ${today ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' : ''}`}
                 >
                   {day.getDate()}
                 </p>
@@ -530,7 +536,7 @@ function WeekGrid({
                       key={item.id}
                       type="button"
                       onClick={() => onOpen(item)}
-                      className={`w-full rounded-lg border border-[var(--border)] border-l-[3px] p-2.5 text-left transition-shadow hover:shadow-md ${item.completed ? 'opacity-50' : ''}`}
+                      className={`w-full rounded-lg border border-[var(--border)] border-l-[3px] p-2.5 text-left transition-shadow hover:shadow-md ${item.completed ? 'text-[var(--muted-foreground)]' : ''}`}
                       style={{ borderLeftColor: item.color, backgroundColor: `${item.color}0c` }}
                     >
                       <span className="mb-2 flex items-center gap-1.5 text-[10px] text-[var(--muted-foreground)]">
@@ -548,7 +554,7 @@ function WeekGrid({
                       {course && (
                         <span
                           className="mt-1.5 block truncate text-[10px] font-medium"
-                          style={{ color: course.color }}
+                          style={{ color: 'var(--foreground)' }}
                         >
                           {course.code}
                         </span>
@@ -591,7 +597,7 @@ function AgendaItem({
     <button
       type="button"
       onClick={onOpen}
-      className={`flex w-full items-center gap-3 py-4 text-left first:pt-0 last:pb-0 sm:gap-5 ${item.completed ? 'opacity-50' : ''}`}
+      className={`flex w-full items-center gap-3 py-4 text-left first:pt-0 last:pb-0 sm:gap-5 ${item.completed ? 'text-[var(--muted-foreground)]' : ''}`}
     >
       <div
         className="flex size-10 shrink-0 items-center justify-center rounded-xl"

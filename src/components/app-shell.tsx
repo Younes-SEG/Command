@@ -22,6 +22,9 @@ import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { CommandPalette } from './command-palette';
 import { EditorHost } from './editors/editor-host';
+import { useCardEntrance } from './use-card-entrance';
+import { StudyBuddy } from './study-buddy';
+import { LegalFooter } from './legal-footer';
 import { addDays, isOverdue, toDate } from '@/lib/dates';
 const navigation = [
   { href: '/', label: 'Home', icon: Home },
@@ -138,6 +141,7 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
 export function AppShell({ children }: { children: ReactNode }) {
   const { data, save } = useWorkspace();
   const path = usePathname();
+  const contentRef = useCardEntrance(path);
   const [commandOpen, setCommandOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [error, setError] = useState('');
@@ -221,9 +225,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             {error}
           </p>
         )}
-        <main id="main-content" className="page-content">
+        <main ref={contentRef} id="main-content" tabIndex={-1} className="page-content">
           {children}
         </main>
+        <LegalFooter />
       </div>
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogContent className="mobile-nav">
@@ -236,6 +241,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Dialog>
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
       <EditorHost />
+      <StudyBuddy />
     </>
   );
 }

@@ -84,6 +84,7 @@ model Assessment {
   notes    String           @default("")
   course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   tasks    Task[]
+  calendarImport ImportedCalendarItem?
 
   @@index([courseId, dueDate])
 }
@@ -131,9 +132,40 @@ model CalendarEvent {
   courseId    String?
   color       String   @default("#5b67e8")
   course      Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  calendarImport ImportedCalendarItem?
 
   @@index([startAt, endAt])
   @@index([courseId])
+}
+
+model CalendarSubscription {
+  id            String   @id @default(cuid())
+  url           String   @unique
+  name          String
+  enabled       Boolean  @default(true)
+  fromDate      DateTime @db.Date
+  throughDate   DateTime @db.Date
+  timeZone      String
+  lastSyncedAt  DateTime?
+  lastAttemptAt DateTime?
+  lastError     String?
+  itemCount     Int      @default(0)
+  consentedAt   DateTime?
+  consentVersion String?
+  items         ImportedCalendarItem[]
+}
+
+model ImportedCalendarItem {
+  id             String @id @default(cuid())
+  subscriptionId String
+  sourceKey      String
+  assessmentId   String? @unique
+  eventId        String? @unique
+  subscription   CalendarSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  assessment     Assessment? @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+  event          CalendarEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@unique([subscriptionId, sourceKey])
 }
 
 model ScheduleEntry {
@@ -156,4 +188,6 @@ model Settings {
   timeFormat    String  @default("12")
   weekStartsOn  Int     @default(1)
   showCompleted Boolean @default(false)
+  studyBuddy    String  @default("CAT")
+  buddyMotion   Boolean @default(true)
 }

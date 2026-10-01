@@ -144,7 +144,7 @@ export function TasksView() {
           >
             {item.label}
             <span
-              className={`ml-2 text-xs ${item.id === 'overdue' && counts[item.id] > 0 ? 'text-[var(--destructive)]' : 'opacity-60'}`}
+              className={`ml-2 text-xs ${item.id === 'overdue' && counts[item.id] > 0 ? 'text-[var(--destructive)]' : 'text-[var(--muted-foreground)]'}`}
             >
               {counts[item.id]}
             </span>
@@ -176,7 +176,7 @@ export function TasksView() {
               <SlidersHorizontal size={15} />
               Filters
               {filterCount > 0 && (
-                <span className="flex size-5 items-center justify-center rounded-full bg-[var(--primary)] text-[10px] text-white">
+                <span className="flex size-5 items-center justify-center rounded-full bg-[var(--primary)] text-[10px] text-[var(--primary-foreground)]">
                   {filterCount}
                 </span>
               )}
@@ -379,8 +379,8 @@ function TaskRow({ task, busy, onToggle }: { task: Task; busy: boolean; onToggle
   const completedSubtasks = task.subtasks.filter((subtask) => subtask.completed).length;
   const priorityClass = {
     URGENT: 'text-red-600 dark:text-red-400',
-    HIGH: 'text-orange-600 dark:text-orange-400',
-    MEDIUM: 'text-amber-600 dark:text-amber-400',
+    HIGH: 'text-orange-700 dark:text-orange-400',
+    MEDIUM: 'text-amber-700 dark:text-amber-400',
     LOW: 'text-[var(--muted-foreground)]',
   }[task.priority];
   return (
@@ -392,7 +392,7 @@ function TaskRow({ task, busy, onToggle }: { task: Task; busy: boolean; onToggle
         aria-label={`${completed ? 'Reopen' : 'Complete'} ${task.title}`}
         disabled={busy}
         onClick={onToggle}
-        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--primary)] disabled:opacity-50 ${completed ? 'border-[var(--primary)] bg-[var(--primary)] text-white' : 'border-[var(--border)] hover:border-[var(--primary)]'}`}
+        className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--primary)] disabled:opacity-50 ${completed ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]' : 'border-[var(--control-border)] hover:border-[var(--primary)]'}`}
       >
         {busy ? (
           <Loader2 size={12} className="animate-spin" />
@@ -412,7 +412,7 @@ function TaskRow({ task, busy, onToggle }: { task: Task; busy: boolean; onToggle
           {course ? (
             <span
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1"
-              style={{ color: course.color, backgroundColor: `${course.color}15` }}
+              style={{ color: 'var(--foreground)', backgroundColor: `${course.color}15` }}
             >
               <span className="size-1.5 rounded-full" style={{ backgroundColor: course.color }} />
               {course.code}
@@ -462,7 +462,7 @@ function TaskRow({ task, busy, onToggle }: { task: Task; busy: boolean; onToggle
           {dueLabel(task.dueDate, now)}
         </p>
         {task.dueDate && (
-          <p className="mt-1.5 opacity-75">{formatTime(task.dueDate, data.settings.timeFormat)}</p>
+          <p className="mt-1.5">{formatTime(task.dueDate, data.settings.timeFormat)}</p>
         )}
       </div>
       <Button

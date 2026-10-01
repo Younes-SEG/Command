@@ -101,13 +101,13 @@ export function CourseDetail({ id }: { id: string }) {
         <div className="flex min-w-0 items-start gap-4">
           <div
             className="flex size-14 shrink-0 items-center justify-center rounded-2xl"
-            style={{ backgroundColor: `${course.color}18`, color: course.color }}
+            style={{ backgroundColor: `${course.color}18`, color: 'var(--foreground)' }}
           >
             <BookOpen size={25} />
           </div>
           <div>
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="eyebrow" style={{ color: course.color }}>
+              <span className="eyebrow" style={{ color: 'var(--foreground)' }}>
                 {course.code}
               </span>
               <span className="badge">{semester?.name ?? 'No semester'}</span>
@@ -139,7 +139,9 @@ export function CourseDetail({ id }: { id: string }) {
           >
             {item}
             {item === 'Assessments' && (
-              <span className="ml-2 text-xs opacity-60">{assessments.length}</span>
+              <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                {assessments.length}
+              </span>
             )}
           </button>
         ))}
@@ -646,7 +648,7 @@ function SchedulePanel({
             >
               <div
                 className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl"
-                style={{ backgroundColor: `${course.color}18`, color: course.color }}
+                style={{ backgroundColor: `${course.color}18`, color: 'var(--foreground)' }}
               >
                 <span className="text-xs font-medium uppercase">
                   {dayNames[entry.dayOfWeek].slice(0, 3)}

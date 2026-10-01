@@ -7,6 +7,7 @@ export default defineConfig([
   globalIgnores([
     '.next/**',
     'src/generated/**',
+    'public/licenses/**',
     '.postgres/**',
     'playwright-report/**',
     'test-results/**',

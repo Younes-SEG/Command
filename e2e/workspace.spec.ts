@@ -33,14 +33,33 @@ test('course, grades, task, calendar and persistence work together', async ({ pa
   let courseId = '';
   let taskId = '';
   let eventId = '';
+  let semesterId = '';
   try {
+    const start = new Date();
+    const end = new Date();
+    start.setDate(start.getDate() - 7);
+    end.setDate(end.getDate() + 7);
+    const semester = await request.post('/api/semesters', {
+      data: {
+        name: `Workflow semester ${suffix}`,
+        startDate: start.toISOString().slice(0, 10),
+        endDate: end.toISOString().slice(0, 10),
+        isActive: false,
+      },
+    });
+    expect(semester.ok()).toBeTruthy();
+    semesterId = (await workspace(request)).semesters.find(
+      (s) => s.name === `Workflow semester ${suffix}`,
+    )!.id;
     await page.goto('/courses');
     await expect(page.getByRole('heading', { name: 'Your courses' })).toBeVisible();
     await page.getByRole('button', { name: 'Add course', exact: true }).click();
     await page.getByLabel('Course code', { exact: true }).fill(code);
     await page.getByLabel('Course name', { exact: true }).fill(courseName);
+    await page.getByLabel('Semester', { exact: true }).selectOption(semesterId);
     await saved(page, 'Create course');
     courseId = (await workspace(request)).courses.find((c) => c.code === code)!.id;
+    await page.getByLabel('Filter by semester').selectOption(semesterId);
     await page
       .getByRole('link')
       .filter({ has: page.getByRole('heading', { name: courseName }) })
@@ -53,9 +72,12 @@ test('course, grades, task, calendar and persistence work together', async ({ pa
     await page.getByLabel('Due date & time (optional)').fill(`${await localDay(page)}T23:55`);
     await saved(page, 'Create assessment');
     await page.goto('/');
-    await expect(
-      page.getByRole('button').filter({ hasText: 'First assignment' }).first(),
-    ).toBeVisible();
+    const activeSemester = (await workspace(request)).semesters.find(
+      (semester) => semester.isActive,
+    );
+    const homeDeadline = page.getByRole('button').filter({ hasText: 'First assignment' }).first();
+    if (activeSemester && activeSemester.id !== semesterId) await expect(homeDeadline).toBeHidden();
+    else await expect(homeDeadline).toBeVisible();
     await page.goto('/calendar');
     await expect(
       page
@@ -149,6 +171,7 @@ test('course, grades, task, calendar and persistence work together', async ({ pa
     if (taskId) await request.delete(`/api/tasks/${taskId}`);
     if (eventId) await request.delete(`/api/events/${eventId}`);
     if (courseId) await request.delete(`/api/courses/${courseId}`);
+    if (semesterId) await request.delete(`/api/semesters/${semesterId}`);
   }
 });
 

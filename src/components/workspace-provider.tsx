@@ -65,6 +65,17 @@ export function WorkspaceProvider({
       setNow(new Date());
     }
   }, []);
+  useEffect(() => {
+    const update = () => {
+      if (!document.hidden) void refresh().catch(() => {});
+    };
+    const timer = setInterval(update, 60000);
+    window.addEventListener('focus', update);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', update);
+    };
+  }, [refresh]);
   const mutate = useCallback(
     async (kind: EntityKind, method: string, input?: Record<string, unknown>, id?: string) => {
       const response = await fetch(`/api/${kind}${id ? `/${encodeURIComponent(id)}` : ''}`, {

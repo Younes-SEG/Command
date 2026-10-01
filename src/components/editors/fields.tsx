@@ -11,18 +11,31 @@ export function Field({
   hint,
   children,
   wide,
+  required,
 }: {
   name: string;
   label: string;
   hint?: string;
   children: ReactNode;
   wide?: boolean;
+  required?: boolean;
 }) {
   return (
     <div className={`field ${wide ? 'sm:col-span-2' : ''}`}>
-      <Label htmlFor={`editor-${name}`}>{label}</Label>
+      <div className="flex items-center gap-1">
+        <Label htmlFor={`editor-${name}`}>{label}</Label>
+        {required && (
+          <span aria-hidden="true" className="muted ml-1 text-xs">
+            (required)
+          </span>
+        )}
+      </div>
       {children}
-      {hint && <p className="muted text-xs leading-relaxed">{hint}</p>}
+      {hint && (
+        <p id={`editor-${name}-hint`} className="muted text-xs leading-relaxed">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -55,13 +68,14 @@ export function TextField({
   maxLength?: number;
 }) {
   return (
-    <Field name={name} label={label} hint={hint} wide={wide}>
+    <Field name={name} label={label} hint={hint} wide={wide} required={required}>
       <Input
         id={`editor-${name}`}
         name={name}
         type={type}
         defaultValue={value ?? ''}
         required={required}
+        aria-describedby={hint ? `editor-${name}-hint` : undefined}
         min={min}
         max={max}
         step={step}
@@ -113,7 +127,7 @@ export function SelectField({
   onChange?: (value: string) => void;
 }) {
   return (
-    <Field name={name} label={label}>
+    <Field name={name} label={label} required={required}>
       <select
         id={`editor-${name}`}
         name={name}

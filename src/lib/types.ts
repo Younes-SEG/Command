@@ -78,6 +78,8 @@ export interface Settings {
   timeFormat: '12' | '24';
   weekStartsOn: 0 | 1;
   showCompleted: boolean;
+  studyBuddy: 'CAT' | 'SPROUT' | 'CLOUD' | 'NONE';
+  buddyMotion: boolean;
 }
 export interface Workspace {
   semesters: Semester[];

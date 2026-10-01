@@ -27,7 +27,10 @@ export function CourseCard({ course }: { course: Course }) {
         </div>
         <ArrowUpRight size={15} className="muted" />
       </div>
-      <div className="text-[10px] font-semibold tracking-wide mb-1" style={{ color: course.color }}>
+      <div
+        className="text-[10px] font-semibold tracking-wide mb-1"
+        style={{ color: 'var(--foreground)' }}
+      >
         {course.code}
         {course.archived && <span className="badge ml-2">Archived</span>}
       </div>
