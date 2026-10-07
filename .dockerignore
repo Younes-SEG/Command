@@ -1,0 +1,15 @@
+*
+!package.json
+!package-lock.json
+!services/
+!services/syllabus/
+!services/syllabus/*.ts
+!src/
+!src/lib/
+!src/lib/syllabus.ts
+!src/lib/syllabus-result.ts
+!src/lib/types.ts
+!src/lib/server/
+!src/lib/server/errors.ts
+!src/lib/server/syllabus-ai.ts
+!src/lib/server/syllabus-text.ts

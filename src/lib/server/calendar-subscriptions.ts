@@ -219,12 +219,6 @@ export async function connectSubscription(input: z.infer<typeof subscriptionInpu
       400,
       'No events fall within these dates. Adjust the import dates and preview again.',
     );
-  const existing = await db.calendarSubscription.findUnique({ where: { url: input.url } });
-  if (existing?.enabled)
-    throw new ApiError(
-      409,
-      'This calendar is already connected. Use Sync now, or disconnect it before changing its dates.',
-    );
   await db.$transaction(
     async (tx) => {
       const data = {

@@ -9,3 +9,5 @@ src/generated/
 test-results/
 playwright-report/
 artifacts/
+.syllabus-service/
+.env.syllabus.local

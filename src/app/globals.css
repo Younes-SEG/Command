@@ -201,6 +201,47 @@ label:has(input[type='checkbox']) {
   color: var(--muted-foreground);
   opacity: 1;
 }
+.input.input-with-icon {
+  padding-inline-start: 36px;
+}
+.input:not(:disabled):hover {
+  border-color: var(--primary);
+}
+.syllabus-file-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 18px 20px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--control-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+.syllabus-file-picker:not(:disabled):hover,
+.syllabus-file-picker:focus-visible {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, var(--card));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.syllabus-file-picker:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.syllabus-file-picker:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.syllabus-file-picker:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
 textarea.input {
   padding-top: 10px;
   height: auto;
@@ -296,6 +337,7 @@ textarea.input {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow-y: auto;
   padding: 29px 18px 18px;
 }
 .brand {
@@ -715,12 +757,15 @@ kbd {
   padding: 23px;
   transition:
     transform 0.15s,
+    border-color 0.15s,
     box-shadow 0.15s;
   overflow: hidden;
 }
-.course-card:hover {
+.course-card:hover,
+.course-card:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px #00000007;
+  border-color: var(--primary);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 .course-card:before {
   content: '';
@@ -1014,6 +1059,11 @@ kbd {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .course-card:hover,
+  .course-card:focus-visible,
+  .syllabus-file-picker:not(:disabled):hover {
+    transform: none;
+  }
   *,
   *:before,
   *:after {

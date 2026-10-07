@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { BookOpen, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useWorkspace } from './workspace-provider';
 import { CourseCard } from './course-card';
@@ -25,24 +26,33 @@ export function CoursesView() {
           <h1>Your courses</h1>
           <p>Keep the big picture in view, and the details in their place.</p>
         </div>
-        <Button
-          onClick={() =>
-            openEditor(
-              'courses',
-              undefined,
-              semester !== 'all' ? { semesterId: semester } : undefined,
-            )
-          }
-        >
-          <Plus />
-          Add course
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/syllabus">Import syllabus</Link>
+          </Button>
+          <Button
+            onClick={() =>
+              openEditor(
+                'courses',
+                undefined,
+                semester !== 'all' ? { semesterId: semester } : undefined,
+              )
+            }
+          >
+            <Plus />
+            Add course
+          </Button>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 mb-7">
         <div className="relative max-w-xs flex-1 min-w-44">
-          <Search size={15} className="absolute left-3 top-3 muted" />
+          <Search
+            size={15}
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 muted"
+          />
           <input
-            className="input pl-9"
+            className="input input-with-icon"
             aria-label="Search courses"
             placeholder="Find a course…"
             value={query}

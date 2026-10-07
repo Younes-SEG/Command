@@ -72,13 +72,30 @@ export function AssessmentFields({
         step="0.01"
         required
       />
-      <SelectField
-        name="status"
-        label="Status"
-        value={status}
-        onChange={changeStatus}
-        options={optionsFor(['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'GRADED'])}
-      />
+      <div className="space-y-3">
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[var(--control-border)] p-3">
+          <input
+            type="checkbox"
+            checked={status === 'SUBMITTED' || status === 'GRADED'}
+            disabled={status === 'GRADED'}
+            onChange={(event) => changeStatus(event.target.checked ? 'SUBMITTED' : 'IN_PROGRESS')}
+            aria-describedby="assessment-completed-help"
+          />
+          <span className="text-sm font-medium">Completed</span>
+        </label>
+        <p id="assessment-completed-help" className="muted text-xs leading-relaxed">
+          {status === 'GRADED'
+            ? 'A recorded grade already marks this work complete.'
+            : 'Marks this as submitted and keeps it in Grades → Awaiting grades until you receive a score.'}
+        </p>
+        <SelectField
+          name="status"
+          label="Status"
+          value={status}
+          onChange={changeStatus}
+          options={optionsFor(['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'GRADED'])}
+        />
+      </div>
       <TextField
         name="maxScore"
         label="Maximum score"

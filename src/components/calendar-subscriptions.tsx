@@ -108,9 +108,9 @@ export function CalendarSubscriptions() {
     }
   }
 
-  function onPreview(event: FormEvent) {
+  function onConnect(event: FormEvent) {
     event.preventDefault();
-    void perform('preview');
+    void perform('connect');
   }
   const deadlines =
     preview?.items.filter((item) => item.course && item.deadline && !item.cancelled).length || 0;
@@ -137,7 +137,7 @@ export function CalendarSubscriptions() {
         </div>
       </div>
       <div className="space-y-5 p-5 sm:px-7">
-        <form onSubmit={onPreview} className="space-y-4">
+        <form onSubmit={onConnect} className="space-y-4">
           <fieldset disabled={!!busy} className="min-w-0 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="calendar-link">Calendar subscription link</Label>
@@ -159,6 +159,46 @@ export function CalendarSubscriptions() {
               <p id="calendar-link-help" className="muted text-xs leading-relaxed">
                 In Brightspace: Calendar → Settings → Enable Calendar Feeds, then Subscribe → copy
                 the link. Choose all calendars to include all your courses.
+              </p>
+              <p id="calendar-preview-notice" className="muted text-xs leading-relaxed">
+                Save calendar stores this private link, imports the selected dates and enables
+                refresh every 15 minutes while Command is running. Preview checks the feed without
+                saving. Your calendar provider receives the request. Use only a link you are
+                authorized to access.{' '}
+                <Link className="underline" href="/legal/privacy">
+                  Calendar privacy details
+                </Link>
+                .
+              </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button
+                  type="submit"
+                  disabled={!url.trim() || !!busy}
+                  aria-describedby="calendar-preview-notice"
+                >
+                  {busy === 'connect' ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Link2 size={15} />
+                  )}
+                  {busy === 'connect' ? 'Saving calendar…' : 'Save calendar'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!url.trim() || !!busy}
+                  onClick={() => void perform('preview')}
+                >
+                  {busy === 'preview' ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <CalendarDays size={15} />
+                  )}
+                  Preview calendar
+                </Button>
+              </div>
+              <p className="muted text-xs">
+                Calendar changes save here separately from your preferences.
               </p>
             </div>
             <details className="rounded-xl border border-[var(--border)] p-3">
@@ -198,23 +238,6 @@ export function CalendarSubscriptions() {
                 reconnect with different dates.
               </p>
             </details>
-            <p id="calendar-preview-notice" className="muted text-xs leading-relaxed">
-              Preview asks your calendar provider for the feed through this local app. The provider
-              receives your network address and feed credential. Nothing is saved until you connect.
-              Use only a link you are authorized to access.{' '}
-              <Link className="underline" href="/legal/privacy">
-                Calendar privacy details
-              </Link>
-              .
-            </p>
-            <Button type="submit" variant="outline" disabled={!url.trim() || !!busy}>
-              {busy === 'preview' ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : (
-                <CalendarDays size={15} />
-              )}
-              Preview calendar
-            </Button>
           </fieldset>
         </form>
         {preview && (

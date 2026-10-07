@@ -32,18 +32,37 @@ If your package manager blocks install scripts, approve the installed Prisma eng
 - Pick Mochi, Sprout, or Nimbus under **Settings → Appearance → Your study buddy** and save preferences. The buddy quietly wanders along the screen edges, follows the mouse, and hops along on navigation. Turn off **Gentle movement** for a still companion, or choose **Off**. Reduced motion is respected; the buddy never intercepts clicks or plays sounds.
 - In **Settings → Connect your calendar**, paste a Brightspace subscription URL, preview the current term, then choose **Connect and import**. Adjust import dates before connecting if needed.
 - Create courses, add their weekly sessions, then add assessments and weights.
+- Choose **Import syllabus** on Courses or a course page, select a course and upload a PDF/TXT. AI reading starts automatically and opens the review list; there is no separate AI button. PDFs are sent as original files so the model sees page images and text, including scanned pages. Review dates, weights, source excerpts/pages and existing matches before saving. Pasted text uses the same AI reader. Imports are snapshots, not live syllabus connections.
 - Enter assessment scores to update the gradebook and target-grade calculator.
+- Open **Grades** in the sidebar (or **Enter grades** on Home) to enter scores across courses. Mark an assessment **Completed** in its editor to keep it on the **Awaiting grades** list until its score arrives.
+- Open **User guide** in the sidebar for setup steps, calendar troubleshooting, completion/grade entry and data controls.
 - Add tasks, optionally attach a course/assessment, and break work into subtasks.
 - Use the combined month/week calendar for deadlines, classes, tasks, and personal events.
 - Press **Ctrl+K** on Windows or **Cmd+K** on macOS for navigation and quick add.
 
 Dates and recurring classes use your device's local time zone. An all-day event's “Last day” is inclusive in the editor; its database end is exclusive. Recurring classes stop at the semester boundary. Archived courses and their linked entries are hidden from the default calendar; their tasks remain accessible in Tasks.
 
+## Shared syllabus reading
+
+Users do not configure AI accounts, API keys or model downloads. The local planner sends only the chosen syllabus and course/semester context to Command’s shared reader. It returns suggestions for review; only confirmed assessments are saved locally. There is no additional AI button, no paid retry on refresh, and no local-key fallback.
+
+The separately deployable service and owner instructions are in [services/syllabus/README.md](services/syllabus/README.md). It includes HTTPS client integration, a persistent atomic quota store, upload limits, cancellation, provider error handling and a deployment Dockerfile. Deploy only this service: the planner must remain bound to loopback with its existing local-access guard.
+
+**Deployment pending:** no owner provider account or live service URL is connected in this checkout. The release URL in `src/lib/syllabus-service-config.ts` is intentionally empty. Until the owner deploys the service and bundles its public URL, the app shows an availability notice with Retry instead of asking users for keys. `COMMAND_SYLLABUS_SERVICE_URL` is an optional developer override, not an end-user setup step.
+
+The owner funds hosting and provider usage. Daily network and global daily/monthly quotas persist across service restarts; these are request counts, not exact monetary caps. Add provider spending controls and verify the reverse-proxy configuration. The anonymous endpoint does not establish per-user identity; host abuse controls are needed before broad public promotion. See the deployment guide for limits and release checks.
+
+Uploads are bounded to 8 MB, 60 PDF pages or 100,000 text characters. Documents are processed in memory and sent inline to OpenAI with `store:false`; provider retention still applies. No grades, other courses, notes or calendar credentials are sent. The reader may miss or misinterpret content, so compare suggestions and source references with the original. See [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
+
+Tests use simulated provider responses without charges or uploading personal data. A live smoke test still requires the deployed service and owner billing configuration.
+
 ## Calendar subscriptions
 
 Calendar subscriptions create missing courses from Brightspace's course labels, reuse matching course codes in an overlapping semester, and import recognized deadlines as assessments. Other entries appear as calendar events. Grades and weights are not supplied by calendar feeds; imported assessments start with no score and 0% weight.
 
 The local Node server checks connected feeds every 15 minutes and on startup when due, including while the browser is closed. The open app refreshes its display every minute and on focus. **Sync now** requests an immediate check (limited to once per minute). Stop the server and syncing stops; the next startup catches up. This timer requires a persistent Node process; serverless deployment needs a separate scheduled job.
+
+The server needs outbound HTTPS access. Starting it inside a network-restricted development tool can leave the local app working while every calendar request fails with `EACCES`. Start Command normally from your terminal or the tool's approved network-capable mode; retain loopback binding and TLS/feed validation. The app now distinguishes network-permission, DNS and certificate failures without exposing the private URL.
 
 Each subscription retains its selected date range. Reconnect with new dates for a new term. Stable event IDs prevent duplicates across refreshes and reconnection to the same URL. Sync updates source titles/dates/locations while preserving locally entered grades, weights, progress and notes. Manually deleted imported items stay deleted. Explicit cancellations are labelled; cancelled assessments lose their due date but retain grades. Missing feed entries are kept because a provider can shorten its feed without cancelling work.
 

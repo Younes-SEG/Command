@@ -59,6 +59,35 @@ export function normalizeFeedUrl(value: string) {
   return url.toString();
 }
 
+/** Classify codes only: raw network messages can contain private feed credentials. */
+export function calendarNetworkMessage(error: unknown): string {
+  const codes = new Set<string>();
+  function collect(value: unknown, depth = 0) {
+    if (!value || typeof value !== 'object' || depth > 3) return;
+    const record = value as { code?: unknown; cause?: unknown; errors?: unknown[] };
+    if (typeof record.code === 'string') codes.add(record.code);
+    collect(record.cause, depth + 1);
+    if (Array.isArray(record.errors)) record.errors.forEach((item) => collect(item, depth + 1));
+  }
+  collect(error);
+  if (codes.has('EACCES') || codes.has('EPERM'))
+    return 'Command’s server is blocked from accessing the internet. Restart Command outside a restricted development session and check its network permissions. Pasting the link again will not fix this.';
+  if (codes.has('ENOTFOUND') || codes.has('EAI_AGAIN'))
+    return 'The calendar server’s address could not be resolved. Check your internet connection and that the subscription link was copied completely.';
+  if (
+    [...codes].some(
+      (code) =>
+        code.includes('CERT') ||
+        code.startsWith('ERR_TLS') ||
+        code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+    )
+  )
+    return 'The calendar server’s secure connection could not be verified. Check your computer’s date and trusted certificates, then try again.';
+  if (codes.has('ETIMEDOUT') || codes.has('ENETUNREACH') || codes.has('EHOSTUNREACH'))
+    return 'The calendar server could not be reached in time. Check your connection and try again.';
+  return 'Unable to reach the calendar. Check your connection and subscription link.';
+}
+
 /** Resolve and pin a public address on every hop; never forward cookies or credentials. */
 export async function fetchCalendarFeed(value: string, redirects = 0): Promise<string> {
   if (redirects > 3) throw new ApiError(400, 'The calendar link redirects too many times.');
@@ -125,9 +154,6 @@ export async function fetchCalendarFeed(value: string, redirects = 0): Promise<s
   } catch (error) {
     if (error instanceof ApiError) throw error;
     // Network errors can contain the private subscription URL. Never log or expose them.
-    throw new ApiError(
-      400,
-      'Unable to reach the calendar. Check your connection and subscription link.',
-    );
+    throw new ApiError(400, calendarNetworkMessage(error));
   }
 }

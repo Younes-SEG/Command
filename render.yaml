@@ -1,0 +1,36 @@
+# Owner deployment only. This provisions a PAID service and persistent disk.
+# Review pricing before creating the Blueprint. It does not deploy the planner.
+services:
+  - type: web
+    name: command-syllabus
+    runtime: docker
+    plan: starter
+    region: ohio
+    dockerfilePath: ./services/syllabus/Dockerfile
+    dockerContext: .
+    autoDeployTrigger: off
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 180
+    disk:
+      name: syllabus-usage
+      mountPath: /var/lib/command-syllabus
+      sizeGB: 1
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_SYLLABUS_MODEL
+        value: gpt-4.1-mini
+      - key: SYLLABUS_LIMIT_SALT
+        generateValue: true
+      - key: SYLLABUS_ENABLED
+        value: 'true'
+      - key: SYLLABUS_NETWORK_DAILY
+        value: '20'
+      - key: SYLLABUS_GLOBAL_DAILY
+        value: '100'
+      - key: SYLLABUS_GLOBAL_MONTHLY
+        value: '500'
+      # Safe default: never trust caller-supplied forwarding headers.
+      # Verify host ingress/proxy chain before changing; see service README.
+      - key: SYLLABUS_TRUST_PROXY_HOPS
+        value: '0'

@@ -1,17 +1,17 @@
-export const policyUpdated = 'October 1, 2026';
+export const policyUpdated = 'October 6, 2026';
 export const calendarNoticeVersion = '2026-10-01';
 
 export const legalDocuments = {
   privacy: {
     title: 'Privacy policy',
     introduction:
-      'Command is a locally run study planner. This policy describes the current downloadable/local edition, not a hosted service.',
+      'Command is a locally run study planner with an optional hosted syllabus reader. This policy describes the local planner and that reading service.',
     sections: [
       {
         title: 'What stays on your computer',
         paragraphs: [
           'Your courses, assessments, grades, tasks, subtasks, notes, calendar entries, semesters and preferences are stored in the PostgreSQL database used by your installation. A display name is optional; a nickname or no name works. Command does not require an account, email address, date of birth, student ID or payment details.',
-          'The application does not send your workspace to Command’s publisher. If you choose a remotely hosted database, network drive, cloud backup or modified deployment, that provider may process your data under its own terms. The bundled database is local; it is not encrypted by Command. Protect your device account, disk and backups.',
+          'Your planner database stays on your computer. Syllabus imports send only the chosen document and course context to the online reader as described below. If you choose a remotely hosted database, network drive, cloud backup or modified deployment, that provider may process your data under its own terms. The bundled database is local; it is not encrypted by Command. Protect your device account, disk and backups.',
         ],
       },
       {
@@ -23,10 +23,18 @@ export const legalDocuments = {
         ],
       },
       {
+        title: 'Syllabus imports',
+        paragraphs: [
+          'Choosing a syllabus file starts AI reading automatically after you select a course. Uploading a PDF/TXT or submitting pasted text sends its content and the selected course code/name and semester dates to Command’s hosted reading service and then OpenAI through your local server. Your other courses, saved grades, notes and calendar credentials are not included. The upload screen explains this transfer before you choose a file. Users do not configure an AI key or account. The service operator manages the provider connection and its costs; request allowances apply.',
+          'Original files and previews are processed in memory and are not saved by Command’s reader. Its usage database stores aggregate request counts and daily rotating, keyed hashes of network addresses or prefixes to enforce allowances. Daily identifiers are pruned hourly after the next UTC day begins; aggregate monthly counters expire the next month. Hosting logs and disk snapshots may have separate retention, which must be documented for the chosen host before public release. Requests use inline PDF data rather than persistent file uploads and disable response storage. Provider retention rules still apply: OpenAI may retain API content for abuse monitoring and other permitted purposes. Disabling response storage does not guarantee zero retention. Review the provider’s current data controls at developers.openai.com/api/docs/guides/your-data before submitting sensitive documents.',
+          'Saving reviewed assessments stores their dates and weights locally; new assessments also keep the displayed source excerpt and page reference in their notes. Existing matched assessments retain their original notes and grades. Discarding the preview does not save academic records, but cannot undo a request already sent to the provider. Erasing Command’s workspace does not erase provider-held copies, hosting logs or temporary service usage counters.',
+        ],
+      },
+      {
         title: 'Tracking, cookies and third parties',
         paragraphs: [
           'Command has no advertising, analytics, session replay, marketing SDKs, tracking cookies, or sale of workspace data. It does not send marketing email. The study buddy’s mouse reactions are calculated in browser memory; pointer positions are not stored or sent anywhere.',
-          'Application code, icons and graphics are bundled locally. Fonts use your device’s installed system fonts. Calendar providers you explicitly connect are the only third-party services contacted by application features. Installing or updating the software through a package registry or download host is a separate network activity governed by that service.',
+          'Application code, icons and graphics are bundled locally. Fonts use your device’s installed system fonts. Calendar connections contact their providers; syllabus imports contact Command’s hosted reader and OpenAI when you upload or submit text. Checking reader availability also contacts the hosted service, without sending syllabus content. Installing or updating the software through a package registry or download host is a separate network activity governed by that service.',
         ],
       },
       {
@@ -68,7 +76,7 @@ export const legalDocuments = {
       {
         title: 'Dates and grade estimates',
         paragraphs: [
-          'Calendar feeds can omit work, delay updates or change their date range. Grades and weights are not imported by the calendar feed. Verify important dates, submissions and results with your institution. Grade calculations and target estimates are planning aids, not official academic records or guarantees.',
+          'Calendar feeds can omit work, delay updates or change their date range. Grades and weights are not imported by the calendar feed. AI syllabus suggestions can omit assessments or misread dates, source references and grading rules. Review them before saving and verify important dates, submissions and results with your institution. Grade calculations and target estimates are planning aids, not official academic records or guarantees.',
         ],
       },
       {
@@ -81,7 +89,7 @@ export const legalDocuments = {
       {
         title: 'Charges and refunds',
         paragraphs: [
-          'This version has no checkout, paid subscription, trial conversion or in-app fees. No refund transaction exists in the app. Independent costs from your internet connection, chosen hosting/database service or other providers are governed by their agreements.',
+          'Command has no checkout, paid subscription, trial conversion or in-app fees. The shared syllabus reader is managed and funded by the operator; users are not asked to provide an AI account or payment details. Request allowances and service availability limits apply. Independent internet costs are governed by your provider’s agreement. No refund transaction exists in Command.',
           'A paid release would need clear pricing, taxes, cancellation and refund terms before a purchase is offered. Nothing here waives any non-waivable consumer right.',
         ],
       },
@@ -145,7 +153,7 @@ export const legalDocuments = {
   about: {
     title: 'About this edition',
     introduction:
-      'Command is a downloadable, locally run personal study planner. It is not operated as a public multi-user web service.',
+      'Command is a downloadable, locally run personal study planner. The planner is not a public multi-user workspace. Optional syllabus imports use a separate hosted reading service.',
     sections: [
       {
         title: 'Publisher details',

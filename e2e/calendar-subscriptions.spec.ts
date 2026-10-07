@@ -1,5 +1,25 @@
 import { test, expect } from '@playwright/test';
 
+test('calendar saves directly beside its link without saving preferences', async ({ page }) => {
+  const actions: string[] = [];
+  await page.route('**/api/calendar-subscriptions', async (route) => {
+    if (route.request().method() === 'POST') {
+      const body = route.request().postDataJSON();
+      actions.push(body.action);
+      expect(body.consentVersion).toBeTruthy();
+    }
+    return route.fulfill({ json: [] });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/settings');
+  await page.getByLabel('Calendar subscription link').fill('https://calendar.example/test');
+  const save = page.getByRole('button', { name: 'Save calendar', exact: true });
+  await expect(save).toBeInViewport();
+  await save.click();
+  await expect(page.getByRole('status').filter({ hasText: 'Calendar connected' })).toBeVisible();
+  expect(actions).toEqual(['connect']);
+});
+
 test('calendar connection preview, import feedback and disconnect work on a narrow screen', async ({
   page,
 }) => {

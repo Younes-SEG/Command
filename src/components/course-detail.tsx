@@ -117,10 +117,15 @@ export function CourseDetail({ id }: { id: string }) {
             <p className="muted mt-2 text-sm">{course.instructor || 'Your course workspace'}</p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => openEditor('courses', id)}>
-          <Pencil size={14} />
-          Edit course
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/syllabus?course=${encodeURIComponent(id)}`}>Import syllabus</Link>
+          </Button>
+          <Button variant="outline" onClick={() => openEditor('courses', id)}>
+            <Pencil size={14} />
+            Edit course
+          </Button>
+        </div>
       </div>
 
       <div className="tabs overflow-x-auto" role="tablist" aria-label="Course sections">

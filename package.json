@@ -22,7 +22,8 @@
     "db:clear-demo": "tsx prisma/clear-demo.ts",
     "db:local": "node scripts/local-db.mjs",
     "setup": "node scripts/setup.mjs",
-    "setup:empty": "node scripts/setup.mjs --empty"
+    "setup:empty": "node scripts/setup.mjs --empty",
+    "syllabus:service": "node --env-file=.env.syllabus.local --import tsx services/syllabus/main.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.0",
@@ -38,6 +39,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0",
+    "unpdf": "^1.8.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {

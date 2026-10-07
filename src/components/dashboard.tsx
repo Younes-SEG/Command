@@ -186,11 +186,43 @@ export function Dashboard() {
           </h1>
           <p>A clear mind starts with a clear day. Let&apos;s make it a good one.</p>
         </div>
-        <Button onClick={() => openEditor('tasks')}>
-          <Plus />
-          Add a task
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/grades">
+              <GraduationCap />
+              Enter grades
+            </Link>
+          </Button>
+          <Button onClick={() => openEditor('tasks')}>
+            <Plus />
+            Add a task
+          </Button>
+        </div>
       </div>
+      {data.assessments.some(
+        (a) =>
+          a.status === 'SUBMITTED' && data.courses.some((c) => c.id === a.courseId && !c.archived),
+      ) && (
+        <Link
+          href="/grades"
+          className="card mb-5 flex items-center justify-between gap-4 p-4 text-sm"
+        >
+          <span>
+            <strong>
+              {
+                data.assessments.filter(
+                  (a) =>
+                    a.status === 'SUBMITTED' &&
+                    data.courses.some((c) => c.id === a.courseId && !c.archived),
+                ).length
+              }{' '}
+              completed assessments
+            </strong>{' '}
+            are waiting for a grade. Keep track of them in Grades.
+          </span>
+          <ArrowRight aria-hidden size={18} className="shrink-0 text-primary" />
+        </Link>
+      )}
       <div className="stat-grid">
         <Stat
           label="Due today"

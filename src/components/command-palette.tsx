@@ -8,6 +8,8 @@ import {
   CheckSquare2,
   CornerDownLeft,
   Home,
+  GraduationCap,
+  CircleHelp,
   Plus,
   Search,
   Settings2,
@@ -42,6 +44,27 @@ export function CommandPalette({
       ?.scrollIntoView({ block: 'nearest' });
   }, [selected, query, open]);
   const actions = [
+    {
+      id: 'syllabus',
+      title: 'Import syllabus',
+      group: 'Navigation',
+      icon: BookOpen,
+      run: () => router.push('/syllabus'),
+    },
+    {
+      id: 'grades',
+      title: 'Enter grades',
+      group: 'Navigation',
+      icon: GraduationCap,
+      run: () => router.push('/grades'),
+    },
+    {
+      id: 'guide',
+      title: 'Open user guide',
+      group: 'Navigation',
+      icon: CircleHelp,
+      run: () => router.push('/guide'),
+    },
     {
       id: 'add-task',
       title: 'Add task',

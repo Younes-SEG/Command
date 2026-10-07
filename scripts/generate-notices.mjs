@@ -42,6 +42,12 @@ function bundledNotices(directory) {
   }
 }
 bundledNotices(resolve('node_modules/next/dist/compiled'));
+// unpdf bundles PDF.js inside its reader rather than as a separate lockfile entry.
+for (const file of ['LICENSE', 'NOTICE.txt']) {
+  sections.push(
+    `\nPDF.js bundled by unpdf — Apache-2.0\n${readFileSync(`public/licenses/pdfjs/${file}`, 'utf8')}\n`,
+  );
+}
 mkdirSync('public', { recursive: true });
 writeFileSync('public/third-party-notices.txt', sections.join('\n'));
 // MPL-covered source is downloadable alongside the shipped application.

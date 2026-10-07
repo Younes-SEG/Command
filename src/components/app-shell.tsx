@@ -9,6 +9,8 @@ import {
   CheckSquare2,
   ChevronRight,
   Home,
+  GraduationCap,
+  CircleHelp,
   Menu,
   Moon,
   Plus,
@@ -31,6 +33,7 @@ const navigation = [
   { href: '/courses', label: 'Courses', icon: BookOpen },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare2 },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/grades', label: 'Grades', icon: GraduationCap },
 ];
 function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickAdd: () => void }) {
   const { data, now } = useWorkspace();
@@ -40,6 +43,9 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
     (c) => !c.archived && (!semester || c.semesterId === semester.id),
   );
   const archivedIds = new Set(data.courses.filter((c) => c.archived).map((c) => c.id));
+  const awaitingGrades = data.assessments.filter(
+    (a) => a.status === 'SUBMITTED' && !archivedIds.has(a.courseId),
+  ).length;
   const overdue = data.tasks.filter(
     (t) => (!t.courseId || !archivedIds.has(t.courseId)) && isOverdue(t.dueDate, t.status, now),
   ).length;
@@ -81,6 +87,11 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
           >
             <Icon />
             {label}
+            {href === '/grades' && awaitingGrades > 0 && (
+              <span className="nav-count" aria-label={`${awaitingGrades} awaiting grades`}>
+                {awaitingGrades}
+              </span>
+            )}
             {href === '/tasks' && overdue > 0 && (
               <span className="nav-count" title={`${overdue} overdue tasks`}>
                 {overdue}
@@ -111,6 +122,14 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
         </div>
       )}
       <div className="sidebar-bottom">
+        <Link
+          href="/guide"
+          onClick={onNavigate}
+          className={`nav-link ${path === '/guide' ? 'active' : ''}`}
+        >
+          <CircleHelp />
+          User guide
+        </Link>
         <Link
           href="/settings"
           onClick={onNavigate}
@@ -146,10 +165,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [error, setError] = useState('');
   const name =
-    path === '/settings'
-      ? 'Settings'
-      : navigation.find((n) => (n.href === '/' ? path === '/' : path.startsWith(n.href)))?.label ||
-        'Workspace';
+    path === '/guide'
+      ? 'User guide'
+      : path === '/settings'
+        ? 'Settings'
+        : navigation.find((n) => (n.href === '/' ? path === '/' : path.startsWith(n.href)))
+            ?.label || 'Workspace';
   async function toggleTheme() {
     try {
       const dark = document.documentElement.classList.contains('dark');

@@ -1,0 +1,5 @@
+PDF.js, bundled by unpdf for local PDF text extraction.
+Copyright Mozilla Foundation and PDF.js contributors.
+Licensed under the Apache License, Version 2.0. See LICENSE in this directory.
+Upstream: https://github.com/mozilla/pdf.js
+The bundled reader is distributed by https://github.com/unjs/unpdf.

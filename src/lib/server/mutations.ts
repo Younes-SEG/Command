@@ -23,7 +23,7 @@ async function requireCourse(tx: Transaction, id: string | null) {
 }
 
 /** Serializability prevents concurrent edits from over-allocating assessment weights. */
-async function transaction<T>(work: (tx: Transaction) => Promise<T>): Promise<T> {
+export async function transaction<T>(work: (tx: Transaction) => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {
       return await db.$transaction(work, { isolationLevel: 'Serializable', timeout: 15_000 });
