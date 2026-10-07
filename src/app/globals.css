@@ -108,6 +108,60 @@ input[type='checkbox'] {
 .muted {
   color: var(--muted-foreground);
 }
+.auth-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.auth-action svg {
+  flex-shrink: 0;
+}
+.auth-action-signup {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  padding-inline: 16px;
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card));
+}
+.auth-action:hover,
+.auth-action:focus-visible {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  border-color: var(--primary);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.auth-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .auth-action:hover {
+    transform: translateY(-1px);
+  }
+  .auth-action:active {
+    transform: translateY(0);
+  }
+  .auth-action-arrow {
+    transition: transform 160ms ease;
+  }
+  .auth-action-signup:hover .auth-action-arrow {
+    transform: translateX(3px);
+  }
+}
 .legal-footer {
   margin-top: 36px;
   padding: 24px;

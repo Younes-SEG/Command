@@ -1,9 +1,20 @@
 'use client';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { ArrowLeft, ArrowRight, KeyRound, UserPlus } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+
+function passwordError(error: unknown) {
+  if (!error || typeof error !== 'object' || !('code' in error)) return null;
+  if (error.code === 'PASSWORD_TOO_SHORT') return 'Choose a longer password.';
+  if (error.code === 'PASSWORD_TOO_LONG') return 'Choose a shorter password.';
+  // Neon normalizes both length errors to this code and throws them from the SDK.
+  if (error.code === 'weak_password')
+    return 'The sign-in service could not accept that password. Try a password between 8 and 128 characters.';
+  return null;
+}
 
 export function SignOutButton({ className }: { className?: string }) {
   const [busy, setBusy] = useState(false);
@@ -90,7 +101,8 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
         });
         if (result.error)
           throw new Error(
-            'Unable to create this account. Try signing in or resetting your password if you already have an account.',
+            passwordError(result.error) ||
+              'Unable to create this account. Try signing in or resetting your password if you already have an account.',
           );
         setNotice(
           'Check your inbox for a verification link, then sign in. Your workspace will start empty.',
@@ -99,7 +111,10 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
         if (!token) throw new Error('This reset link is incomplete. Request a new one.');
         const result = await authClient.resetPassword({ newPassword: password, token });
         if (result.error)
-          throw new Error('This reset link is invalid or expired. Request a new one.');
+          throw new Error(
+            passwordError(result.error) ||
+              'This reset link is invalid or expired. Request a new one.',
+          );
         setNotice('Password updated. You can now sign in with your new password.');
       } else if (verify) {
         const result = await authClient.sendVerificationEmail({ email, callbackURL: `${origin}/` });
@@ -120,7 +135,10 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
         );
       }
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'Please try again later.');
+      setError(
+        passwordError(failure) ||
+          (failure instanceof Error ? failure.message : 'Please try again later.'),
+      );
     } finally {
       setBusy(false);
     }
@@ -173,17 +191,9 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
                 type="password"
                 autoComplete={signIn ? 'current-password' : 'new-password'}
                 required
-                minLength={signIn ? 1 : 12}
-                maxLength={128}
                 disabled={busy}
                 aria-labelledby="auth-password-label"
-                aria-describedby={!signIn ? 'password-help' : undefined}
               />
-              {!signIn && (
-                <span id="password-help" className="muted block text-xs">
-                  Use at least 12 characters. A password manager or a memorable phrase works well.
-                </span>
-              )}
             </label>
           )}
           {signUp && (
@@ -223,22 +233,28 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
                       : 'Send reset link'}
           </Button>
           {signIn && (
-            <Link href="/auth/forgot-password" className="block text-sm text-primary underline">
-              Forgot your password?
-            </Link>
+            <div className="flex justify-center">
+              <Link href="/auth/forgot-password" className="auth-action auth-action-recovery">
+                <KeyRound size={16} aria-hidden="true" />
+                Forgot your password?
+              </Link>
+            </div>
           )}
         </form>
       )}
       <div className="mt-7 border-t border-border pt-5 text-sm">
         {signIn ? (
-          <p>
-            New to Command?{' '}
-            <Link href="/auth/sign-up" className="text-primary underline">
-              Create an account
+          <div className="space-y-3">
+            <p className="muted text-center">New to Command?</p>
+            <Link href="/auth/sign-up" className="auth-action auth-action-signup">
+              <UserPlus size={18} aria-hidden="true" />
+              <span>Create an account</span>
+              <ArrowRight size={18} aria-hidden="true" className="auth-action-arrow ml-auto" />
             </Link>
-          </p>
+          </div>
         ) : (
-          <Link href="/auth/sign-in" className="text-primary underline">
+          <Link href="/auth/sign-in" className="auth-action auth-action-recovery">
+            <ArrowLeft size={16} aria-hidden="true" />
             Back to sign in
           </Link>
         )}
