@@ -8,19 +8,29 @@ import {
   readSyllabusThroughService,
 } from '@/lib/server/syllabus-service';
 import { db } from '@/lib/server/db';
+import { requireWorkspaceId } from '@/lib/server/auth';
+import { isHosted } from '@/lib/server/hosting';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 120;
 
 export async function GET() {
-  return NextResponse.json(
-    { configured: await isSyllabusServiceAvailable() },
-    { headers: { 'Cache-Control': 'no-store' } },
-  );
+  try {
+    await requireWorkspaceId();
+    return NextResponse.json(
+      { configured: await isSyllabusServiceAvailable() },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  } catch (error) {
+    return apiError(error);
+  }
 }
 
 export async function POST(request: Request) {
   try {
+    const workspaceId = await requireWorkspaceId();
+    const uploadLimit = isHosted() ? 4 * 1024 * 1024 : MAX_SYLLABUS_BYTES;
     assertSameOrigin(request);
     const type = request.headers.get('content-type')?.split(';')[0];
     if (type !== 'application/pdf' && type !== 'text/plain')
@@ -34,9 +44,9 @@ export async function POST(request: Request) {
         const { value, done } = await reader.read();
         if (done) break;
         size += value.byteLength;
-        if (size > MAX_SYLLABUS_BYTES) {
+        if (size > uploadLimit) {
           await reader.cancel();
-          throw new ApiError(413, 'Choose a file smaller than 8 MB.');
+          throw new ApiError(413, `Choose a file smaller than ${isHosted() ? 4 : 8} MB.`);
         }
         chunks.push(value);
       }
@@ -50,7 +60,7 @@ export async function POST(request: Request) {
     if (!courseId || courseId.length > 200)
       throw new ApiError(400, 'Choose a course before uploading your syllabus.');
     const course = await db.course.findUnique({
-      where: { id: courseId },
+      where: { id: courseId, semester: { workspaceId } },
       select: { code: true, name: true, semester: { select: { startDate: true, endDate: true } } },
     });
     if (!course) throw new ApiError(404, 'This course no longer exists. Choose another course.');

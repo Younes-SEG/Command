@@ -1,4 +1,5 @@
 import { ApiError } from './errors';
+import { isHosted } from './hosting';
 
 const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -18,7 +19,9 @@ export function assertSameOrigin(request: Request) {
     }
   }
   const origin = request.headers.get('origin');
+  const changesData = !['GET', 'HEAD', 'OPTIONS'].includes(request.method);
   if (
+    (isHosted() && changesData && !origin) ||
     (origin && origin !== expectedOrigin) ||
     request.headers.get('sec-fetch-site') === 'cross-site'
   ) {

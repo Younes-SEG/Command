@@ -30,6 +30,7 @@ const types: AssessmentType[] = [
 
 export function SyllabusImport({ initialCourseId }: { initialCourseId?: string }) {
   const { data, refresh, openEditor } = useWorkspace();
+  const uploadLimitMB = data.hosted ? 4 : 8;
   const [courseId, setCourseId] = useState(initialCourseId || '');
   const [text, setText] = useState('');
   const [fileName, setFileName] = useState('');
@@ -95,8 +96,8 @@ export function SyllabusImport({ initialCourseId }: { initialCourseId?: string }
       setError('Choose a PDF or a .txt file. For Word documents, export to PDF or paste the text.');
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setError('Choose a file smaller than 8 MB.');
+    if (file.size > uploadLimitMB * 1024 * 1024) {
+      setError(`Choose a file smaller than ${uploadLimitMB} MB.`);
       return;
     }
     setText('');
@@ -299,7 +300,9 @@ export function SyllabusImport({ initialCourseId }: { initialCourseId?: string }
           </p>
         )}
         <div className="space-y-2">
-          <p className="text-sm font-medium">Upload syllabus (PDF or TXT, up to 8 MB)</p>
+          <p className="text-sm font-medium">
+            Upload syllabus (PDF or TXT, up to {uploadLimitMB} MB)
+          </p>
           <p className="muted text-xs leading-relaxed" id="syllabus-ai-notice">
             Uploading a file or analysing pasted text sends it and the selected course name and term
             to Command’s online reader and OpenAI for processing. No AI account or setup is needed.
@@ -312,7 +315,7 @@ export function SyllabusImport({ initialCourseId }: { initialCourseId?: string }
             ref={fileInput}
             hidden
             type="file"
-            aria-label="Upload syllabus (PDF or TXT, up to 8 MB)"
+            aria-label={`Upload syllabus (PDF or TXT, up to ${uploadLimitMB} MB)`}
             accept=".pdf,.txt,application/pdf,text/plain"
             disabled={busy || !configured || !semester}
             onChange={(e) => {

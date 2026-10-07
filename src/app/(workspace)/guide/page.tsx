@@ -164,7 +164,8 @@ export default function GuidePage() {
         <p className="leading-relaxed">
           Choose a course and upload your syllabus. Command connects to its online reader
           automatically; you do not need an AI account, API key or model download. Internet access
-          is needed for reading. Your planner and grades remain on this computer.
+          is needed for reading. Your planner and grades stay in your workspace; they are not sent
+          to the AI reader.
         </p>
         <p className="muted text-sm">
           If the reader is unavailable, choose Try again later or add assessments manually from your
@@ -317,7 +318,8 @@ export default function GuidePage() {
             Make sure the subscription includes the right courses and dates, then check its Last
             synced time in Settings. Some school work is not included in calendar feeds; add those
             assessments manually. Command can refresh while its browser tab is closed only if its
-            local server is still running.
+            local server is still running if you use the downloaded edition. On the hosted edition,
+            open Command to trigger due checks or choose Sync now.
           </p>
         </details>
         <details>

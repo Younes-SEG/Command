@@ -5,6 +5,8 @@ import { parseCalendarFeed, type FeedOptions, type FeedPreview } from '@/lib/cal
 import { db } from './db';
 import { ApiError } from './errors';
 import { fetchCalendarFeed, normalizeFeedUrl } from './feed-fetch';
+import { requireWorkspaceId } from './auth';
+import { isHosted } from './hosting';
 
 const date = z
   .string()
@@ -52,7 +54,9 @@ export async function previewSubscription(
 
 /** Explicit projection: the private URL must never enter a workspace response. */
 export async function listSubscriptions() {
+  const workspaceId = await requireWorkspaceId();
   const rows = await db.calendarSubscription.findMany({
+    where: { workspaceId },
     select: {
       id: true,
       enabled: true,
@@ -77,19 +81,23 @@ export async function listSubscriptions() {
   }));
 }
 
-async function semesterForImport(tx: Prisma.TransactionClient, options: FeedOptions) {
+async function semesterForImport(
+  tx: Prisma.TransactionClient,
+  options: FeedOptions,
+  workspaceId: string,
+) {
   const from = new Date(options.fromDate);
   const through = new Date(options.throughDate);
   const existing = await tx.semester.findFirst({
-    where: { startDate: { lte: through }, endDate: { gte: from } },
+    where: { workspaceId, startDate: { lte: through }, endDate: { gte: from } },
     orderBy: { isActive: 'desc' },
   });
   if (existing) return existing;
   const month = from.getUTCMonth();
   const name = `${month < 4 ? 'Winter' : month < 8 ? 'Summer' : 'Fall'} ${from.getUTCFullYear()}`;
-  const active = await tx.semester.findFirst({ where: { isActive: true } });
+  const active = await tx.semester.findFirst({ where: { workspaceId, isActive: true } });
   return tx.semester.create({
-    data: { name, startDate: from, endDate: through, isActive: !active },
+    data: { workspaceId, name, startDate: from, endDate: through, isActive: !active },
   });
 }
 
@@ -99,18 +107,19 @@ export async function applyCalendarFeed(
   subscriptionId: string,
   preview: FeedPreview,
   options: FeedOptions,
+  workspaceId = 'local',
 ) {
   if (
     !(
       await tx.calendarSubscription.findUnique({
-        where: { id: subscriptionId },
+        where: { id: subscriptionId, workspaceId },
         select: { enabled: true },
       })
     )?.enabled
   )
     return;
   const semester = preview.items.some((item) => item.course && !item.cancelled)
-    ? await semesterForImport(tx, options)
+    ? await semesterForImport(tx, options, workspaceId)
     : null;
   const courses = new Map<string, string>();
   const existing = new Map(
@@ -181,6 +190,7 @@ export async function applyCalendarFeed(
     } else {
       const event = await tx.calendarEvent.create({
         data: {
+          workspaceId,
           title: item.title,
           description: item.description,
           startAt: new Date(item.startAt),
@@ -213,6 +223,7 @@ export async function applyCalendarFeed(
 }
 
 export async function connectSubscription(input: z.infer<typeof subscriptionInput>) {
+  const workspaceId = await requireWorkspaceId();
   const preview = await previewSubscription(input);
   if (!preview.items.some((item) => !item.cancelled))
     throw new ApiError(
@@ -223,6 +234,7 @@ export async function connectSubscription(input: z.infer<typeof subscriptionInpu
     async (tx) => {
       const data = {
         ...input,
+        workspaceId,
         enabled: true,
         consentedAt: new Date(),
         consentVersion: calendarNoticeVersion,
@@ -232,11 +244,11 @@ export async function connectSubscription(input: z.infer<typeof subscriptionInpu
         lastAttemptAt: new Date(),
       };
       const subscription = await tx.calendarSubscription.upsert({
-        where: { url: input.url },
+        where: { workspaceId_url: { workspaceId, url: input.url } },
         create: data,
         update: data,
       });
-      await applyCalendarFeed(tx, subscription.id, preview, input);
+      await applyCalendarFeed(tx, subscription.id, preview, input, workspaceId);
     },
     { timeout: 30000, isolationLevel: 'Serializable' },
   );
@@ -251,7 +263,11 @@ function optionsFor(subscription: CalendarSubscription): FeedOptions {
 }
 
 export async function syncSubscription(id: string, automatic = false) {
-  const subscription = await db.calendarSubscription.findUnique({ where: { id } });
+  return syncOwnedSubscription(id, await requireWorkspaceId(), automatic);
+}
+
+async function syncOwnedSubscription(id: string, workspaceId: string, automatic: boolean) {
+  const subscription = await db.calendarSubscription.findUnique({ where: { id, workspaceId } });
   if (!subscription || !subscription.enabled)
     throw new ApiError(404, 'This calendar is no longer connected.');
   // Atomic lease also prevents separate server workers from syncing the same feed together.
@@ -259,6 +275,7 @@ export async function syncSubscription(id: string, automatic = false) {
   const claim = await db.calendarSubscription.updateMany({
     where: {
       id,
+      workspaceId,
       enabled: true,
       OR: [{ lastAttemptAt: null }, { lastAttemptAt: { lt: threshold } }],
     },
@@ -279,7 +296,7 @@ export async function syncSubscription(id: string, automatic = false) {
       { ...options, url: subscription.url },
       new Set(imported.map((item) => item.sourceKey)),
     );
-    await db.$transaction((tx) => applyCalendarFeed(tx, id, preview, options), {
+    await db.$transaction((tx) => applyCalendarFeed(tx, id, preview, options, workspaceId), {
       timeout: 30000,
       isolationLevel: 'Serializable',
     });
@@ -288,20 +305,31 @@ export async function syncSubscription(id: string, automatic = false) {
       error instanceof ApiError
         ? error.message
         : 'Sync could not finish. Your existing entries are safe; try again.';
-    await db.calendarSubscription.updateMany({ where: { id }, data: { lastError: message } });
+    await db.calendarSubscription.updateMany({
+      where: { id, workspaceId },
+      data: { lastError: message },
+    });
     if (!automatic) throw new ApiError(400, message);
   }
 }
 
-export async function syncDueSubscriptions() {
+export async function syncDueSubscriptions(workspaceId?: string) {
+  workspaceId ??= await requireWorkspaceId();
   const rows = await db.calendarSubscription.findMany({
-    where: { enabled: true },
+    where: {
+      workspaceId,
+      enabled: true,
+      OR: [{ lastAttemptAt: null }, { lastAttemptAt: { lt: new Date(Date.now() - 15 * 60000) } }],
+    },
+    orderBy: { lastAttemptAt: { sort: 'asc', nulls: 'first' } },
+    ...(isHosted() ? { take: 3 } : {}),
     select: { id: true },
   });
-  for (const row of rows) await syncSubscription(row.id, true);
+  for (const row of rows) await syncOwnedSubscription(row.id, workspaceId, true);
 }
 
 export function startCalendarSync() {
+  if (isHosted()) return; // Serverless work runs after authenticated requests, never in global timers.
   const state = globalThis as typeof globalThis & {
     calendarSyncTimer?: ReturnType<typeof setInterval>;
   };

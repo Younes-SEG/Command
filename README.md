@@ -1,8 +1,10 @@
 # Command
 
-A single-user university command center built with Next.js, TypeScript, Tailwind CSS, shadcn/ui components, Prisma, and PostgreSQL.
+A university command center with a local edition and hosted private accounts built with Next.js, TypeScript, Tailwind CSS, shadcn/ui components, Prisma, and PostgreSQL.
 
 ## Run locally
+
+For a hosted website with sign-in and private workspaces, follow [Vercel + Neon setup](docs/vercel.md). Each account starts empty; local data is not automatically uploaded or assigned to an account.
 
 Requires Node.js 22.12+ (Node 24 recommended). From this directory:
 
@@ -44,15 +46,15 @@ Dates and recurring classes use your device's local time zone. An all-day event'
 
 ## Shared syllabus reading
 
-Users do not configure AI accounts, API keys or model downloads. The local planner sends only the chosen syllabus and course/semester context to Command’s shared reader. It returns suggestions for review; only confirmed assessments are saved locally. There is no additional AI button, no paid retry on refresh, and no local-key fallback.
+Users do not configure AI accounts, API keys or model downloads. The planner sends only the chosen syllabus and course/semester context to Command’s shared reader. It returns suggestions for review; only confirmed assessments are saved in your workspace. There is no additional AI button, no paid retry on refresh, and no local-key fallback.
 
-The separately deployable service and owner instructions are in [services/syllabus/README.md](services/syllabus/README.md). It includes HTTPS client integration, a persistent atomic quota store, upload limits, cancellation, provider error handling and a deployment Dockerfile. Deploy only this service: the planner must remain bound to loopback with its existing local-access guard.
+The separately deployable service and owner instructions are in [services/syllabus/README.md](services/syllabus/README.md). It includes HTTPS client integration, a persistent atomic quota store, upload limits, cancellation, provider error handling and a deployment Dockerfile. Deploy the reader separately from the planner. The hosted planner uses Neon Auth and per-account ownership; the local edition remains bound to loopback.
 
 **Deployment pending:** no owner provider account or live service URL is connected in this checkout. The release URL in `src/lib/syllabus-service-config.ts` is intentionally empty. Until the owner deploys the service and bundles its public URL, the app shows an availability notice with Retry instead of asking users for keys. `COMMAND_SYLLABUS_SERVICE_URL` is an optional developer override, not an end-user setup step.
 
 The owner funds hosting and provider usage. Daily network and global daily/monthly quotas persist across service restarts; these are request counts, not exact monetary caps. Add provider spending controls and verify the reverse-proxy configuration. The anonymous endpoint does not establish per-user identity; host abuse controls are needed before broad public promotion. See the deployment guide for limits and release checks.
 
-Uploads are bounded to 8 MB, 60 PDF pages or 100,000 text characters. Documents are processed in memory and sent inline to OpenAI with `store:false`; provider retention still applies. No grades, other courses, notes or calendar credentials are sent. The reader may miss or misinterpret content, so compare suggestions and source references with the original. See [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
+Uploads are bounded to 8 MB locally or 4 MB in the hosted planner, 60 PDF pages or 100,000 text characters. Documents are processed in memory and sent inline to OpenAI with `store:false`; provider retention still applies. No grades, other courses, notes or calendar credentials are sent. The reader may miss or misinterpret content, so compare suggestions and source references with the original. See [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
 
 Tests use simulated provider responses without charges or uploading personal data. A live smoke test still requires the deployed service and owner billing configuration.
 
@@ -60,7 +62,7 @@ Tests use simulated provider responses without charges or uploading personal dat
 
 Calendar subscriptions create missing courses from Brightspace's course labels, reuse matching course codes in an overlapping semester, and import recognized deadlines as assessments. Other entries appear as calendar events. Grades and weights are not supplied by calendar feeds; imported assessments start with no score and 0% weight.
 
-The local Node server checks connected feeds every 15 minutes and on startup when due, including while the browser is closed. The open app refreshes its display every minute and on focus. **Sync now** requests an immediate check (limited to once per minute). Stop the server and syncing stops; the next startup catches up. This timer requires a persistent Node process; serverless deployment needs a separate scheduled job.
+The local Node server checks connected feeds every 15 minutes and on startup when due, including while the browser is closed. The open app refreshes its display every minute and on focus. **Sync now** requests an immediate check (limited to once per minute). Stop the server and syncing stops; the next startup catches up. On Vercel, authenticated workspace refreshes check up to three due feeds after the response. Hosted automatic refresh depends on app activity, not a persistent timer.
 
 The server needs outbound HTTPS access. Starting it inside a network-restricted development tool can leave the local app working while every calendar request fails with `EACCES`. Start Command normally from your terminal or the tool's approved network-capable mode; retain loopback binding and TLS/feed validation. The app now distinguishes network-permission, DNS and certificate failures without exposing the private URL.
 
@@ -74,7 +76,7 @@ Disconnected connections remain visible. **Forget link** deletes the private con
 
 **Settings → Your data** downloads a readable JSON copy without private feed URLs, or erases the active workspace after typed confirmation. Erasure does not remove independent backups, exported files or provider calendars. The export has no automatic restore tool yet.
 
-Footer links open Privacy, Terms, Cookies, Accessibility, Credits and About. This edition has no accounts, fees, marketing emails, tracking cookies or analytics. Policy pages do not load private workspace data. Non-local workspace requests are rejected; this is still a personal local app, not a hosted multi-user service.
+Footer links open Privacy, Terms, Cookies, Accessibility, Credits and About without loading private workspace data. The local edition rejects non-local workspace requests. The hosted edition uses verified Neon Auth sessions and account-scoped access. Necessary authentication cookies are used; no fees, marketing emails, advertising or analytics are implemented.
 
 See [the public-release review](docs/public-release-review.md) for implemented protections, deliberately omitted features, dependency/licence findings and remaining distribution work. Ontario is configured; operator identity and contact details are intentionally pending. New public services require a fresh review. `npm run licenses` regenerates notices and the unmodified ical.js source included for redistribution.
 
@@ -85,7 +87,7 @@ See [the public-release review](docs/public-release-review.md) for implemented p
 - `src/lib/grades.ts`, `tasks.ts`, `dates.ts`, and `calendar.ts` hold reusable business logic. Presentation components do not implement grade formulas.
 - Current grade is a weighted average of **graded work only**. Course weight graded and points earned toward the final grade are separate values. Targets assume a final weight of 100%; missing weights and unattainable targets are explained.
 - Mutations validate relationships and use serializable transactions to prevent concurrent assessment weights exceeding 100%. Deleting a course removes its assessments/schedule while keeping linked tasks and events without that course.
-- This is a local personal application with no login. Development and production commands bind to loopback. Add access control before exposing it on a network.
+- Local commands bind to loopback and need no login. On Vercel (or with `COMMAND_HOSTED=true`), each data operation derives ownership from a verified Neon Auth session. Client-supplied workspace IDs never grant access.
 - The CLI dependency overrides in `package.json` select patched versions of `deepmerge-ts` and `mysql2`; the application itself uses PostgreSQL.
 
 ## Verification

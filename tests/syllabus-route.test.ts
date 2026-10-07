@@ -46,7 +46,7 @@ it('passes original PDF bytes and only the selected course context to the model'
   expect(input).toMatchObject({ kind: 'pdf', pages: 1 });
   expect(input.text).toBeUndefined();
   expect(db.course.findUnique).toHaveBeenCalledWith({
-    where: { id: 'test-course' },
+    where: { id: 'test-course', semester: { workspaceId: 'local' } },
     select: { code: true, name: true, semester: { select: { startDate: true, endDate: true } } },
   });
 });

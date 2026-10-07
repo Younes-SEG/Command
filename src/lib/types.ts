@@ -82,6 +82,7 @@ export interface Settings {
   buddyMotion: boolean;
 }
 export interface Workspace {
+  hosted?: boolean;
   semesters: Semester[];
   courses: Course[];
   assessments: Assessment[];

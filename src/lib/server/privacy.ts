@@ -1,6 +1,7 @@
 import { db } from './db';
 import { getWorkspace } from './workspace';
 import { listSubscriptions } from './calendar-subscriptions';
+import { requireWorkspaceId } from './auth';
 
 export async function exportWorkspace() {
   return {
@@ -13,16 +14,22 @@ export async function exportWorkspace() {
 }
 
 export async function eraseWorkspace() {
+  const workspaceId = await requireWorkspaceId();
   await db.$transaction(
     async (tx) => {
       // Removing subscriptions first prevents in-flight syncs from applying new entries.
-      await tx.calendarSubscription.deleteMany();
-      await tx.task.deleteMany();
-      await tx.calendarEvent.deleteMany();
-      await tx.course.deleteMany();
-      await tx.semester.deleteMany();
-      await tx.settings.deleteMany();
-      await tx.settings.create({ data: { id: 'preferences' } });
+      await tx.calendarSubscription.deleteMany({ where: { workspaceId } });
+      await tx.task.deleteMany({ where: { workspaceId } });
+      await tx.calendarEvent.deleteMany({ where: { workspaceId } });
+      await tx.course.deleteMany({ where: { semester: { workspaceId } } });
+      await tx.semester.deleteMany({ where: { workspaceId } });
+      await tx.settings.deleteMany({ where: { workspaceId } });
+      await tx.settings.create({
+        data: {
+          id: workspaceId === 'local' ? 'preferences' : `preferences:${workspaceId}`,
+          workspaceId,
+        },
+      });
     },
     { isolationLevel: 'Serializable', timeout: 30000 },
   );

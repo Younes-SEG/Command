@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/next.mjs dev --hostname 127.0.0.1",
     "build": "prisma generate && node scripts/generate-notices.mjs && node scripts/next.mjs build",
+    "vercel-build": "prisma migrate deploy && npm run build",
     "start": "node scripts/next.mjs start --hostname 127.0.0.1",
     "licenses": "node scripts/generate-notices.mjs",
     "lint": "eslint .",
@@ -23,9 +24,11 @@
     "db:local": "node scripts/local-db.mjs",
     "setup": "node scripts/setup.mjs",
     "setup:empty": "node scripts/setup.mjs --empty",
-    "syllabus:service": "node --env-file=.env.syllabus.local --import tsx services/syllabus/main.ts"
+    "syllabus:service": "node --env-file=.env.syllabus.local --import tsx services/syllabus/main.ts",
+    "test:tenancy": "vitest run --config vitest.tenancy.config.ts"
   },
   "dependencies": {
+    "@neondatabase/auth": "^0.5.0-beta",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "class-variance-authority": "^0.7.1",

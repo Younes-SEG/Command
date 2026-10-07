@@ -11,6 +11,7 @@ import {
 import { db } from '@/lib/server/db';
 import { ApiError } from '@/lib/server/errors';
 import { calendarNoticeVersion } from '@/lib/legal';
+import { requireWorkspaceId } from '@/lib/server/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const workspaceId = await requireWorkspaceId();
     const body = await mutationBody(request);
     const action = z
       .enum(['preview', 'connect', 'sync', 'disconnect', 'forget'])
@@ -45,8 +47,13 @@ export async function POST(request: Request) {
     } else {
       const id = z.string().min(1).max(200).parse(body.id);
       if (action === 'sync') await syncSubscription(id);
-      else if (action === 'forget') await db.calendarSubscription.delete({ where: { id } });
-      else await db.calendarSubscription.update({ where: { id }, data: { enabled: false } });
+      else if (action === 'forget')
+        await db.calendarSubscription.delete({ where: { id, workspaceId } });
+      else
+        await db.calendarSubscription.update({
+          where: { id, workspaceId },
+          data: { enabled: false },
+        });
     }
     return NextResponse.json(await listSubscriptions(), {
       headers: { 'Cache-Control': 'no-store' },

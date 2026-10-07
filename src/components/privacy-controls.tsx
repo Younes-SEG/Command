@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useWorkspace } from './workspace-provider';
 import {
   Dialog,
   DialogTrigger,
@@ -17,6 +18,7 @@ import {
 } from './ui/dialog';
 
 export function PrivacyControls() {
+  const { data } = useWorkspace();
   const [confirmation, setConfirmation] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -46,8 +48,9 @@ export function PrivacyControls() {
         Your data
       </h2>
       <p className="muted text-sm leading-relaxed">
-        Your workspace is stored in this installation. No account or identity check is needed to
-        access or delete it.{' '}
+        {data.hosted
+          ? 'Your workspace is saved to your account. You can export or erase your workspace here. Erasing it does not delete your sign-in account.'
+          : 'Your workspace is stored in this installation. No account or identity check is needed to access or delete it.'}{' '}
         <Link href="/legal/privacy" className="underline">
           Read the privacy policy
         </Link>

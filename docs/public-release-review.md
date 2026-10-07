@@ -1,6 +1,8 @@
 # Public release review — local edition
 
-Reviewed October 1, 2026 for the planned Ontario, Canada publisher. Command is intended as a downloaded app run on each person's computer. This review covers the current source-based local edition; it does not certify legal compliance, complete WCAG conformance or readiness for hosted multi-user use.
+Reviewed October 1, 2026 for the planned Ontario, Canada publisher. This historical review covers the original local edition, not a certification of compliance or hosted readiness.
+
+**Hosted-edition update (October 7, 2026):** Command now supports Neon Auth email accounts on Vercel. Account-scoped access covers reads, mutations, imports, calendar connections, export and workspace erasure. Existing local records retain local ownership. Necessary session cookies and provider verification/reset emails are now used. See [deployment setup](vercel.md) for required configuration and live verification. Account deletion and operator/contact details still need a release process. Workspace erasure does not delete the Neon Auth account. The local-edition findings below describe the earlier distribution.
 
 ## What applies now
 

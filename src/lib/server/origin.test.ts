@@ -1,7 +1,31 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { assertSameOrigin } from './origin';
 
 describe('same-origin mutation guard', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it('requires an origin in hosted mode and rejects forged origin headers', () => {
+    vi.stubEnv('COMMAND_HOSTED', 'true');
+    expect(() =>
+      assertSameOrigin(new Request('https://command.example/api/tasks', { method: 'POST' })),
+    ).toThrow();
+    expect(() =>
+      assertSameOrigin(new Request('https://command.example/api/privacy/export')),
+    ).not.toThrow();
+    expect(() =>
+      assertSameOrigin(
+        new Request('https://command.example/api/tasks', {
+          headers: { host: 'evil.example', origin: 'https://evil.example' },
+        }),
+      ),
+    ).toThrow();
+    expect(() =>
+      assertSameOrigin(
+        new Request('https://command.example/api/tasks', {
+          headers: { origin: 'https://command.example' },
+        }),
+      ),
+    ).not.toThrow();
+  });
   it('accepts a browser using 127.0.0.1 when Next normalizes its URL to localhost', () => {
     expect(() =>
       assertSameOrigin(

@@ -27,6 +27,7 @@ import { EditorHost } from './editors/editor-host';
 import { useCardEntrance } from './use-card-entrance';
 import { StudyBuddy } from './study-buddy';
 import { LegalFooter } from './legal-footer';
+import { SignOutButton } from './auth-panel';
 import { addDays, isOverdue, toDate } from '@/lib/dates';
 const navigation = [
   { href: '/', label: 'Home', icon: Home },
@@ -138,6 +139,7 @@ function Sidebar({ onNavigate, onQuickAdd }: { onNavigate?: () => void; onQuickA
           <Settings2 />
           Settings
         </Link>
+        {data.hosted && <SignOutButton className="nav-link w-full" />}
         {semester && (
           <div className="semester-card">
             <div className="flex items-center justify-between mb-2">

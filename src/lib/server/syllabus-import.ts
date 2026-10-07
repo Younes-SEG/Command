@@ -3,6 +3,7 @@ import { assessmentSchema } from './validation';
 import { transaction } from './mutations';
 import { ApiError } from './errors';
 import { assessmentNameKey } from '../syllabus';
+import { requireWorkspaceId } from './auth';
 
 const schema = z.object({
   courseId: z.string().min(1).max(200),
@@ -23,9 +24,12 @@ const schema = z.object({
 });
 
 export async function importSyllabus(body: unknown) {
+  const workspaceId = await requireWorkspaceId();
   const { courseId, items } = schema.parse(body);
   return transaction(async (tx) => {
-    const course = await tx.course.findUnique({ where: { id: courseId } });
+    const course = await tx.course.findUnique({
+      where: { id: courseId, semester: { workspaceId } },
+    });
     if (!course) throw new ApiError(404, 'This course no longer exists.');
     const current = await tx.assessment.findMany({ where: { courseId } });
     const usedIds = new Set<string>();

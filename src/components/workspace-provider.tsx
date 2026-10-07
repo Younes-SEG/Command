@@ -58,6 +58,10 @@ export function WorkspaceProvider({
   const refresh = useCallback(async () => {
     const number = ++requestNumber.current;
     const response = await fetch('/api/workspace', { cache: 'no-store' });
+    if (response.status === 401 || response.status === 403) {
+      window.location.replace(response.status === 403 ? '/auth/verify-email' : '/auth/sign-in');
+      return;
+    }
     if (!response.ok) throw new Error('Unable to refresh your workspace. Please retry.');
     const value: Workspace = await response.json();
     if (number === requestNumber.current) {
@@ -84,6 +88,7 @@ export function WorkspaceProvider({
         body: input ? JSON.stringify(input) : undefined,
       });
       const result = await response.json().catch(() => ({}));
+      if (response.status === 401) window.location.replace('/auth/sign-in');
       if (!response.ok)
         throw new Error(result.error || 'This change could not be saved. Please try again.');
       try {

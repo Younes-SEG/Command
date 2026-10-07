@@ -32,7 +32,7 @@ interface Subscription {
 }
 
 export function CalendarSubscriptions() {
-  const { now, refresh } = useWorkspace();
+  const { now, refresh, data } = useWorkspace();
   const [options, setOptions] = useState(() => currentTerm(now));
   const [url, setUrl] = useState('');
   const [preview, setPreview] = useState<FeedPreview | null>(null);
@@ -165,6 +165,8 @@ export function CalendarSubscriptions() {
                 refresh every 15 minutes while Command is running. Preview checks the feed without
                 saving. Your calendar provider receives the request. Use only a link you are
                 authorized to access.{' '}
+                {data.hosted &&
+                  'Your private link is stored in your online workspace and fetched by the hosted server. '}
                 <Link className="underline" href="/legal/privacy">
                   Calendar privacy details
                 </Link>
@@ -304,6 +306,7 @@ export function CalendarSubscriptions() {
                   By choosing Connect and import, you authorize Command to store this private link
                   and import and refresh its calendar data every 15 minutes while running. You can
                   disconnect or forget it below at any time.
+                  {data.hosted && ' Hosted automatic checks depend on using the app.'}
                 </p>
                 <Button
                   aria-describedby="calendar-connect-notice"
@@ -412,10 +415,12 @@ export function CalendarSubscriptions() {
           </div>
         ))}
         <p className="muted text-xs leading-relaxed">
-          Checks every 15 minutes while the Command server is running, even if you close this tab.
-          Catches up after restart. Grades and notes stay yours. Entries that disappear from the
-          feed are kept for review; explicit cancellations are labelled. Disconnecting keeps
-          imported entries and remembers this feed for reconnection.
+          {data.hosted
+            ? 'Checks for updates while you use Command, at most every 15 minutes per feed. Use Sync now for an immediate check. '
+            : 'Checks every 15 minutes while the Command server is running, even if you close this tab. Catches up after restart. '}
+          Grades and notes stay yours. Entries that disappear from the feed are kept for review;
+          explicit cancellations are labelled. Disconnecting keeps imported entries and remembers
+          this feed for reconnection.
         </p>
       </div>
     </section>
