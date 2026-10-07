@@ -1,16 +1,48 @@
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
-const session = vi.hoisted(() => vi.fn());
+const { session, createAuth } = vi.hoisted(() => {
+  const session = vi.fn();
+  return { session, createAuth: vi.fn(() => ({ getSession: session })) };
+});
 vi.mock('@neondatabase/auth/next/server', () => ({
-  createNeonAuth: () => ({ getSession: session }),
+  createNeonAuth: createAuth,
 }));
-import { requireWorkspaceId } from '../src/lib/server/auth';
+import { isAuthConfigured, requireWorkspaceId } from '../src/lib/server/auth';
 
 beforeEach(() => {
   vi.stubEnv('VERCEL', '');
   vi.stubEnv('COMMAND_HOSTED', 'true');
   vi.stubEnv('NEON_AUTH_BASE_URL', 'https://auth.example.test');
+  vi.stubEnv('COMMAND_AUTH_BASE_URL', '');
   vi.stubEnv('NEON_AUTH_COOKIE_SECRET', 'test-only-secret-with-at-least-32-characters');
   session.mockReset();
+});
+it('uses the manual Auth URL for both validation and the SDK when the managed URL is provisioning', async () => {
+  vi.stubEnv('NEON_AUTH_BASE_URL', 'provisioning');
+  vi.stubEnv('COMMAND_AUTH_BASE_URL', '  https://manual-auth.example.test/neondb/auth  ');
+  expect(isAuthConfigured()).toBe(true);
+  session.mockResolvedValue(valid());
+  expect(await requireWorkspaceId()).toBe('user:alice');
+  expect(createAuth).toHaveBeenCalledWith(
+    expect.objectContaining({ baseUrl: 'https://manual-auth.example.test/neondb/auth' }),
+  );
+});
+it('accepts the managed URL when the optional override is blank', () => {
+  vi.stubEnv('COMMAND_AUTH_BASE_URL', '  ');
+  expect(isAuthConfigured()).toBe(true);
+  vi.stubEnv('NEON_AUTH_BASE_URL', 'provisioning');
+  expect(isAuthConfigured()).toBe(false);
+});
+it.each([
+  'provisioning',
+  'http://auth.example.test',
+  'https://user:password@auth.example.test',
+  'https://auth.example.test/?key=test',
+  'https://auth.example.test/#test',
+])('fails closed for an invalid explicit override: %s', async (url) => {
+  vi.stubEnv('COMMAND_AUTH_BASE_URL', url);
+  expect(isAuthConfigured()).toBe(false);
+  await expect(requireWorkspaceId()).rejects.toMatchObject({ status: 503 });
+  expect(session).not.toHaveBeenCalled();
 });
 afterEach(() => vi.unstubAllEnvs());
 const valid = () => ({

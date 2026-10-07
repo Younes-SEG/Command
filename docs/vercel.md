@@ -13,9 +13,12 @@ The hosted edition gives each verified account its own workspace. Vercel automat
 | `DATABASE_URL`            | Neon's pooled PostgreSQL connection string, with its supplied SSL settings                |
 | `DATABASE_URL_UNPOOLED`   | Optional direct connection string for migrations; otherwise migrations use `DATABASE_URL` |
 | `NEON_AUTH_BASE_URL`      | The Auth URL from the same Neon branch                                                    |
+| `COMMAND_AUTH_BASE_URL`   | Optional manual Auth URL; takes precedence over the integration-managed URL               |
 | `NEON_AUTH_COOKIE_SECRET` | A new random secret with at least 32 characters                                           |
 
 Generate the cookie secret locally with `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`. Paste it only into the environment setting. Never commit it, put it in a `NEXT_PUBLIC_` variable, or send it in chat. Rotating it signs users out.
+
+If Neon's integration locks `NEON_AUTH_BASE_URL` at `provisioning`, open Neon **Settings → Better Auth**, copy the **Auth URL** (not the JWKS URL), and add it in Vercel as a new `COMMAND_AUTH_BASE_URL` variable for **Production**. Leave the managed variable and database integration intact. The override takes precedence for both configuration checks and authentication requests. A malformed override blocks sign-in rather than falling back to a different provider. Do not apply the production override to Preview; use the Auth URL for that preview's own branch if an override is needed there.
 
 4. Redeploy the latest commit. `vercel.json` runs `npm run vercel-build`, which applies committed Prisma migrations and builds the app. It never seeds sample data. Do not use `prisma migrate reset`, `setup`, or `db:seed` on the production database.
 5. Open the site, create an account, verify its email, and sign in. A new account starts empty. Create a semester in Settings, then add courses or connect a calendar.

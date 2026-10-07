@@ -3,9 +3,16 @@ import type { createNeonAuth } from '@neondatabase/auth/next/server';
 import { ApiError } from './errors';
 import { isHosted, LOCAL_WORKSPACE_ID } from './hosting';
 
+// Owner-controlled escape hatch when an integration-managed URL is stuck at
+// "provisioning". A non-empty override must pass validation; never silently
+// switch providers when an explicitly configured override is invalid.
+function authBaseUrl() {
+  return process.env.COMMAND_AUTH_BASE_URL?.trim() || process.env.NEON_AUTH_BASE_URL?.trim() || '';
+}
+
 export function isAuthConfigured() {
   try {
-    const url = new URL(process.env.NEON_AUTH_BASE_URL || '');
+    const url = new URL(authBaseUrl());
     return (
       url.protocol === 'https:' &&
       !url.username &&
@@ -26,7 +33,7 @@ export async function getAuth() {
   // Load Next's request APIs only in hosted mode, so local maintenance scripts work in Node.
   const { createNeonAuth } = await import('@neondatabase/auth/next/server');
   return (auth ??= createNeonAuth({
-    baseUrl: process.env.NEON_AUTH_BASE_URL!,
+    baseUrl: authBaseUrl(),
     cookies: { secret: process.env.NEON_AUTH_COOKIE_SECRET!, sessionDataTtl: 60, sameSite: 'lax' },
     logLevel: 'silent',
   }));
