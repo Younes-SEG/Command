@@ -129,13 +129,24 @@ input[type='checkbox'] {
 .auth-action svg {
   flex-shrink: 0;
 }
+.auth-signup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-action-recovery {
+  width: 100%;
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--card));
+}
 .auth-action-signup {
   display: flex;
   width: 100%;
   min-height: 48px;
   padding-inline: 16px;
-  background: var(--accent);
-  border-color: color-mix(in srgb, var(--primary) 35%, var(--card));
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 .auth-action:hover,
 .auth-action:focus-visible {
@@ -147,6 +158,11 @@ input[type='checkbox'] {
 .auth-action:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
+}
+.auth-action-signup:hover,
+.auth-action-signup:focus-visible {
+  color: var(--primary-foreground);
+  background: color-mix(in srgb, var(--primary) 90%, var(--foreground));
 }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .auth-action:hover {

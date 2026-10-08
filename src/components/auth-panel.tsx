@@ -244,7 +244,7 @@ export function AuthPanel({ mode, token }: { mode: string; token?: string }) {
       )}
       <div className="mt-7 border-t border-border pt-5 text-sm">
         {signIn ? (
-          <div className="space-y-3">
+          <div className="auth-signup">
             <p className="muted text-center">New to Command?</p>
             <Link href="/auth/sign-up" className="auth-action auth-action-signup">
               <UserPlus size={18} aria-hidden="true" />
